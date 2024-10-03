@@ -1,0 +1,14 @@
+/* src/components/Navbar.css */
+.navbar {
+    background-color: #0d6efd;
+  }
+  
+  .navbar-brand, .nav-link {
+    color: #ffffff !important;
+    font-size: 1.1rem;
+  }
+  
+  .nav-link:hover {
+    color: #cce5ff !important;
+  }
+  

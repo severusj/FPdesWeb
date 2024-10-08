@@ -1,3 +1,4 @@
+// src/components/MedicalHistory.js
 import React from 'react';
 
 function MedicalHistory() {

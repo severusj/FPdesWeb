@@ -1,3 +1,4 @@
+// src/components/PatientRegistration.js
 import React from 'react';
 
 function PatientRegistration() {

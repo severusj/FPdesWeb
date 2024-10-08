@@ -1,21 +1,29 @@
+// server.js
 const express = require('express');
 const axios = require('axios');
-const cors = require('cors'); // <--- Importa cors
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 
-// Habilita CORS para todas las rutas
 app.use(cors());
-
 app.use(express.json());
 
 app.post('/chatgpt', async (req, res) => {
   try {
     const { prompt } = req.body;
+    const systemMessage = {
+      role: 'system',
+      content: 'Eres un médico experto. Habla con términos técnicos y proporciona explicaciones detalladas sobre diagnósticos médicos, planes de acción y procesos clínicos.'
+    };
+
+    const userMessage = {
+      role: 'user',
+      content: prompt
+    };
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: prompt }],
+      messages: [systemMessage, userMessage],
     }, {
       headers: {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,

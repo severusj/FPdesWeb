@@ -1,62 +1,90 @@
 /* src/components/SymptomConsultation.css */
-
-.chat-box {
-    background-color: #f8f9fa;
-    border-radius: 10px;
+.chat-container {
+    max-width: 800px; /* Más ancho para pantallas grandes */
+    width: 90%; /* Adaptable a diferentes tamaños de pantalla */
+    margin: 0 auto;
     padding: 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: auto;
+    background-color: #f0f0f0;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
   }
   
-  .messages {
-    height: 300px;
-    overflow-y: scroll;
-    margin-bottom: 20px;
+  .chat-box {
+    max-height: 500px; /* Mayor altura para más mensajes */
+    overflow-y: auto;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #ffffff;
+    border: 2px solid #dedede;
+    border-radius: 15px;
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05);
   }
   
-  .message {
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 5px;
-    max-width: 80%;
-    word-wrap: break-word;
-  }
-  
-  .message.user {
-    background-color: #0d6efd;
-    color: white;
-    text-align: right;
-    margin-left: auto;
-  }
-  
-  .message.bot {
-    background-color: #f1f1f1;
-    color: black;
-    text-align: left;
-  }
-  
-  .input-box {
+  .message-container {
     display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
   }
   
-  .input-box input {
-    flex-grow: 1;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    margin-right: 10px;
+  .user-message, .bot-message {
+    padding: 12px;
+    border-radius: 15px;
+    max-width: 75%;
+    word-wrap: break-word;
+    font-size: 16px;
   }
   
-  .input-box button {
-    padding: 10px;
-    background-color: #0d6efd;
+  .user-message {
+    align-self: flex-end;
+    background-color: #007bff;
     color: white;
-    border: none;
-    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
   
-  .input-box button:disabled {
-    background-color: #ccc;
+  .bot-message {
+    align-self: flex-start;
+    background-color: #f1f1f1;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-form {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+  }
+  
+  textarea {
+    flex: 1;
+    padding: 10px;
+    border-radius: 15px;
+    border: 2px solid #dedede;
+    font-size: 16px;
+    resize: none;
+    outline: none;
+  }
+  
+  .btn-send {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 50%;
+    margin-left: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn-send:hover {
+    background-color: #0056b3;
+  }
+  
+  .loading {
+    text-align: center;
+    font-style: italic;
+    color: #888;
   }
   

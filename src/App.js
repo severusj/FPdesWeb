@@ -21,6 +21,7 @@ function App() {
           <Route path="/consulta-sintomas" element={<SymptomConsultation />} />
           <Route path="/historial-medico" element={<MedicalHistory />} />
         </Routes>
+        <br></br>
         <footer>
           MedicLive © 2024
         </footer>

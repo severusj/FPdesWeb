@@ -1,4 +1,3 @@
-// src/components/SymptomConsultation.js
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import './SymptomConsultation.css';
@@ -48,7 +47,9 @@ function SymptomConsultation() {
 
   return (
     <div className="chat-container">
-      <h2>Consulta de Síntomas</h2>
+      <h1>Consulta de Síntomas</h1>
+      <h6>En éste apartado podrás describir la situación de tu paciente para recibir atención y sugerencias en tiempo real con LucIA, tu asistente virtual.</h6>
+      <p>El apartado de Ingeligencia Artificial es exclusivamente para recibir sugerencias como guía al médico en turno para recibir orientación sobre procedimientos o posibles soluciones, LucIA <strong>NO</strong> está autorizada, programada o capacitada para hacer diagnósticos 100% precisos ni brindar informes oficiales como lo haría un humano real. Por lo cual es recomendable continuar con las prácticas tradicionales después de utilizado el chat con el bot.</p>
       <div className="chat-box" ref={chatBoxRef}>
         {responses.map((response, index) => (
           <div key={index} className="message-container">
@@ -60,13 +61,13 @@ function SymptomConsultation() {
             </div>
           </div>
         ))}
-        {loading && <p className="loading">ChatGPT está escribiendo...</p>}
+        {loading && <p className="loading">LucIA está escribiendo...</p>}
       </div>
       <form onSubmit={handleSubmit} className="input-form">
         <textarea
           value={symptoms}
           onChange={handleInputChange}
-          placeholder="Describe la información del paciente y sus síntomas aquí"
+          placeholder="Describe la información física del paciente y sus síntomas aquí"
           rows="1"
           required
         />

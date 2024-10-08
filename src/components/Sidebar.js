@@ -20,12 +20,12 @@ function Sidebar() {
         </li>
         <li className="nav-item">
           <Link className="nav-link text-light" to="/consulta-sintomas">
-            <i className="fas fa-stethoscope me-2"></i> Consulta de Síntomas
+            <i className="fas fa-stethoscope fa-robot me-2"></i> Preguntar a LucIA
           </Link>
         </li>
         <li className="nav-item">
           <Link className="nav-link text-light" to="/historial-medico">
-            <i className="fas fa-file-medical me-2"></i> Historial Médico
+            <i className="fas fa-stethoscope me-2"></i> Historial Médico
           </Link>
         </li>
       </ul>

@@ -1,0 +1,45 @@
+use dbml;
+
+CREATE TABLE Numeros(
+	ID_Telefono int AUTO_INCREMENT primary key,
+ 	Numero_1 int(8) not null,
+    Numero_2 int(8) null
+);
+
+CREATE TABLE Correos(
+	ID_Email int AUTO_INCREMENT primary key,
+ 	Email_1 varchar(50) not null,
+    Email_2 varchar(50) null
+);
+
+CREATE TABLE Paciente(
+	ID_Paciente int AUTO_INCREMENT primary key, 
+    Nombre_1 varchar(50) not null,
+    Nombre_2 varchar(50) null,
+    Apellido_1 varchar(50) not null,
+    Apellido_2 varchar(50) null,
+    EmailFK int null, constraint FK_Email FOREIGN key (EmailFK) REFERENCES Correos(ID_Email),
+    NumeroFK int null, constraint FK_Numero FOREIGN key(NumeroFK) REFERENCES Numeros(ID_Telefono)
+);
+
+CREATE TABLE Especialidades(
+	ID_Especialidad int AUTO_INCREMENT primary key,
+    Tipo_Especialidad varchar(50)
+);
+
+CREATE TABLE Doctores(
+	ID_Doctor int AUTO_INCREMENT primary key,
+    Nombre_1 varchar(50) not null,
+    Nombre_2 varchar(50) null,
+    Apellido_1 varchar(50) not null,
+    Apellido_2 varchar(50) null,
+    EspecialidadFK int null, constraint FK_Especialidad FOREIGN key (EspecialidadFK) REFERENCES Especialidades(ID_Especialidad),
+    NumeroFK int null, constraint FK_NumeroD FOREIGN key (NumeroFK) REFERENCES Numeros(ID_Telefono)
+);
+
+CREATE TABLE CitasMedicas(
+	ID_Cita int AUTO_INCREMENT primary key,
+    Descripcion varchar(250) not null,
+    PacienteFK int null, constraint FK_Paciente FOREIGN key (PacienteFK) REFERENCES Paciente(ID_Paciente),
+    DoctorFK int null, constraint FK_Doctor FOREIGN key (DoctorFK) REFERENCES Doctores(ID_Doctor)
+);

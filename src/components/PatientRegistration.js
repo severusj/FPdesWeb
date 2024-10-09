@@ -9,5 +9,5 @@ function PatientRegistration() {
     </div>
   );
 }
-
+//xd error
 export default PatientRegistration;

@@ -1,12 +1,11 @@
-// src/components/PatientRegistration.js
 import React from 'react';
 
 function PatientRegistration() {
   return (
     <div className="module-container">
-      <h2>Registro de Pacientes</h2>
-      <p>Gestiona la información básica de los pacientes.</p>
-      <button className="btn btn-primary">Añadir Paciente</button>
+      <h2>Registro de Citas</h2>
+      <p>Gestiona la información básica de las citas médicas</p>
+      <button className="btn btn-primary">Añadir Cita</button>
     </div>
   );
 }

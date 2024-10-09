@@ -10,7 +10,7 @@ function Sidebar() {
       <ul className="nav flex-column">
         <li className="nav-item">
           <Link className="nav-link text-light" to="/registro-pacientes">
-            <i className="fas fa-user-plus me-2"></i> Registro de Citas
+            <i className="fas fa-user-plus me-2"></i> Registro de Pacientes
           </Link>
         </li>
         <li className="nav-item">

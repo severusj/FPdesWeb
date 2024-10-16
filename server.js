@@ -1,14 +1,33 @@
-// server.js
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const mysql = require('mysql2');
 require('dotenv').config();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Configurar la conexión con la base de datos MySQL
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root', 
+  password: 'Test12345.',
+  database: 'medic_live'
+});
+
+// Conectar a la base de datos MySQL
+db.connect((err) => {
+  if (err) {
+    console.error('Error conectándose a la base de datos:', err);
+    return;
+  }
+  console.log('Conexión exitosa a la base de datos MySQL');
+});
+
+// Endpoint para la API de ChatGPT
 app.post('/chatgpt', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -21,6 +40,7 @@ app.post('/chatgpt', async (req, res) => {
       role: 'user',
       content: prompt
     };
+
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-3.5-turbo',
       messages: [systemMessage, userMessage],
@@ -39,6 +59,22 @@ app.post('/chatgpt', async (req, res) => {
   }
 });
 
+// Endpoint para registrar un paciente en la base de datos
+app.post('/register-patient', (req, res) => {
+   const { Nombre_1, Nombre_2, Apellido_1, Apellido_2, FK_Email, FK_Numero, DPI, Fecha_Cita } = req.body;
+
+   const query = 'INSERT INTO Paciente (Nombre_1, Nombre_2, Apellido_1, Apellido_2, FK_Email, FK_Numero, DPI, Fecha_Cita) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+   const values = [Nombre_1, Nombre_2, Apellido_1, Apellido_2, FK_Email, FK_Numero, DPI, Fecha_Cita];
+
+   db.query(query, values, (error, results) => {
+      if (error) {
+         return res.status(500).json({ message: 'Error al registrar paciente', error });
+      }
+      return res.status(200).json({ message: 'Paciente registrado con éxito' });
+   });
+});
+
+// Iniciar el servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

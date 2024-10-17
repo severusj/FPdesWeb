@@ -9,8 +9,8 @@ function PatientRegistration() {
     Nombre_2: '',
     Apellido_1: '',
     Apellido_2: '',
-    FK_Email: null, // Inicializa como null, se puede ajustar más tarde
-    FK_Numero: null, // Inicializa como null, se puede ajustar más tarde
+    EmailFK: null, // Inicializa como null, se puede ajustar más tarde
+    NumeroFK: null, // Inicializa como null, se puede ajustar más tarde
     DPI: '',
     Fecha_Cita: ''
   });
@@ -34,7 +34,7 @@ function PatientRegistration() {
     }
   
     // Agrega aquí el resto de los campos
-    const { Nombre_2, Apellido_2, FK_Email, FK_Numero } = patient;
+    const { Nombre_2, Apellido_2, EmailFK, NumeroFK } = patient;
   
     // Envia la solicitud al servidor
     try {
@@ -43,8 +43,8 @@ function PatientRegistration() {
         Nombre_2: Nombre_2 || null,  // Asigna null si no hay valor
         Apellido_1: patient.Apellido_1,
         Apellido_2: Apellido_2 || null,
-        FK_Email: FK_Email || null,
-        FK_Numero: FK_Numero || null,
+        EmailFK: EmailFK || null,
+        NumeroFK: NumeroFK || null,
         DPI: patient.DPI,
         Fecha_Cita: patient.Fecha_Cita
       });
@@ -55,8 +55,8 @@ function PatientRegistration() {
         Nombre_2: '',
         Apellido_1: '',
         Apellido_2: '',
-        FK_Email: null,
-        FK_Numero: null,
+        EmailFK: null,
+        NumeroFK: null,
         DPI: '',
         Fecha_Cita: ''
       });
@@ -121,25 +121,25 @@ function PatientRegistration() {
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="FK_Email" className="form-label">Correo Electrónico</label>
+          <label htmlFor="EmailFK" className="form-label">Correo Electrónico</label>
           <input
             type="mail"
             className="form-control"
-            id="FK_Email"
-            name="FK_Email"
-            value={patient.FK_Email || ''}
+            id="EmailFK"
+            name="EmailFK"
+            value={patient.EmailFK || ''}
             onChange={handleChange}
             required
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="FK_Numero" className="form-label">Número Telefónico</label>
+          <label htmlFor="NumeroFK" className="form-label">Número Telefónico</label>
           <input
             type="number"
             className="form-control"
-            id="FK_Numero"
-            name="FK_Numero"
-            value={patient.FK_Numero || ''}
+            id="NumeroFK"
+            name="NumeroFK"
+            value={patient.NumeroFK || ''}
             onChange={handleChange}
             required
           />

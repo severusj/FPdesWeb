@@ -59,20 +59,18 @@ app.post('/chatgpt', async (req, res) => {
   }
 });
 
-// Endpoint para registrar un paciente en la base de datos
 app.post('/register-patient', (req, res) => {
-   const { Nombre_1, Nombre_2, Apellido_1, Apellido_2, FK_Email, FK_Numero, DPI, Fecha_Cita } = req.body;
+  const { Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita } = req.body;
 
-   const query = 'INSERT INTO Paciente (Nombre_1, Nombre_2, Apellido_1, Apellido_2, FK_Email, FK_Numero, DPI, Fecha_Cita) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-   const values = [Nombre_1, Nombre_2, Apellido_1, Apellido_2, FK_Email, FK_Numero, DPI, Fecha_Cita];
-
-   db.query(query, values, (error, results) => {
+  const sql = 'INSERT INTO Paciente (Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  db.query(sql, [Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita], (error, results) => {
       if (error) {
-         return res.status(500).json({ message: 'Error al registrar paciente', error });
+          return res.status(500).json({ message: 'Error al registrar paciente' });
       }
-      return res.status(200).json({ message: 'Paciente registrado con éxito' });
-   });
+      res.status(200).json({ message: 'Paciente registrado con éxito' });
+  });
 });
+
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;

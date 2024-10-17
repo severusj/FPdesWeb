@@ -12,7 +12,8 @@ function PatientRegistration() {
     EmailFK: null, // Inicializa como null, se puede ajustar más tarde
     NumeroFK: null, // Inicializa como null, se puede ajustar más tarde
     DPI: '',
-    Fecha_Cita: ''
+    Fecha_Cita: '',
+    Hora_Cita: ''
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -46,7 +47,8 @@ function PatientRegistration() {
         EmailFK: EmailFK || null,
         NumeroFK: NumeroFK || null,
         DPI: patient.DPI,
-        Fecha_Cita: patient.Fecha_Cita
+        Fecha_Cita: patient.Fecha_Cita,
+        Hora_Cita: patient.Hora_Cita
       });
       setModalMessage(response.data.message);
       setShowModal(true);
@@ -58,7 +60,8 @@ function PatientRegistration() {
         EmailFK: null,
         NumeroFK: null,
         DPI: '',
-        Fecha_Cita: ''
+        Fecha_Cita: '',
+        Hora_Cita: ''
       });
     } catch (error) {
       console.error('Error al registrar paciente:', error);
@@ -164,6 +167,18 @@ function PatientRegistration() {
             id="Fecha_Cita"
             name="Fecha_Cita"
             value={patient.Fecha_Cita}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="Hora_Cita" className="form-label">Hora de Cita</label>
+          <input
+            type="time"
+            className="form-control"
+            id="Hora_Cita"
+            name="Hora_Cita"
+            value={patient.Hora_Cita}
             onChange={handleChange}
             required
           />

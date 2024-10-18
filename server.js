@@ -71,6 +71,15 @@ app.post('/register-patient', (req, res) => {
   });
 });
 
+app.get ('/get-patient', (req, res) => { 
+  const sql = 'SELECT * FROM Paciente';
+  db.query(sql, (error, results) => { 
+    if (error) {
+      return res.status(500).json({ message: 'Error al obtener pacientes' });
+    }
+    console.log(results)
+    res.json(results);
+})});
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;

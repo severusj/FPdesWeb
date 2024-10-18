@@ -1,4 +1,3 @@
-// src/components/Sidebar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';  // Importación de FontAwesome
@@ -6,7 +5,9 @@ import '@fortawesome/fontawesome-free/css/all.min.css';  // Importación de Font
 function Sidebar() {
   return (
     <div className="sidebar bg-dark text-light">
-      <h2 className="sidebar-header text-center py-4">MedicLive</h2>
+      <div className="sidebar-header text-center py-4">
+        <img src="/utils/logomed.png" alt="MedicLive Logo" className="img-fluid" style={{ maxWidth: '100%' }} />
+      </div>
       <ul className="nav flex-column">
         <li className="nav-item">
           <Link className="nav-link text-light" to="/registro-pacientes">

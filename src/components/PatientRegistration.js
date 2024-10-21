@@ -9,16 +9,26 @@ function PatientRegistration() {
     Nombre_2: '',
     Apellido_1: '',
     Apellido_2: '',
-    EmailFK: null, // Inicializa como null, se puede ajustar más tarde
-    NumeroFK: null, // Inicializa como null, se puede ajustar más tarde
+    EmailFK: '',
+    NumeroFK: '',
     DPI: '',
     Fecha_Cita: '',
     Hora_Cita: '',
-    Sintomas:''
+    Sintomas: ''
   });
 
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Valida el formato del correo electrónico
+    return emailRegex.test(email);
+  };
+
+  const validateDPI = (dpi) => {
+    const dpiRegex = /^\d{13}$/; // Valida que el DPI tenga exactamente 13 dígitos numéricos
+    return dpiRegex.test(dpi);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,26 +37,37 @@ function PatientRegistration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Verifica que todos los campos requeridos no estén vacíos
     if (!patient.Nombre_1 || !patient.Apellido_1 || !patient.DPI || !patient.Fecha_Cita) {
       setModalMessage('Por favor, completa todos los campos obligatorios.');
       setShowModal(true);
       return;
     }
-  
-    // Agrega aquí el resto de los campos
-    const { Nombre_2, Apellido_2, EmailFK, NumeroFK } = patient;
-  
+
+    // Validación de correo electrónico
+    if (!validateEmail(patient.EmailFK)) {
+      setModalMessage('Por favor, ingresa un correo electrónico válido.');
+      setShowModal(true);
+      return;
+    }
+
+    // Validación de DPI
+    if (!validateDPI(patient.DPI)) {
+      setModalMessage('El DPI debe contener exactamente 13 dígitos.');
+      setShowModal(true);
+      return;
+    }
+
     // Envia la solicitud al servidor
     try {
       const response = await axios.post('http://localhost:5000/register-patient', {
         Nombre_1: patient.Nombre_1,
-        Nombre_2: Nombre_2 || null,  // Asigna null si no hay valor
+        Nombre_2: patient.Nombre_2 || null,
         Apellido_1: patient.Apellido_1,
-        Apellido_2: Apellido_2 || null,
-        EmailFK: EmailFK || null,
-        NumeroFK: NumeroFK || null,
+        Apellido_2: patient.Apellido_2 || null,
+        EmailFK: patient.EmailFK || null,
+        NumeroFK: patient.NumeroFK || null,
         DPI: patient.DPI,
         Fecha_Cita: patient.Fecha_Cita,
         Hora_Cita: patient.Hora_Cita,
@@ -59,8 +80,8 @@ function PatientRegistration() {
         Nombre_2: '',
         Apellido_1: '',
         Apellido_2: '',
-        EmailFK: null,
-        NumeroFK: null,
+        EmailFK: '',
+        NumeroFK: '',
         DPI: '',
         Fecha_Cita: '',
         Hora_Cita: '',
@@ -72,8 +93,7 @@ function PatientRegistration() {
       setShowModal(true);
     }
   };
-  
-  
+
   const closeModal = () => setShowModal(false);
 
   return (
@@ -129,11 +149,11 @@ function PatientRegistration() {
         <div className="mb-3">
           <label htmlFor="EmailFK" className="form-label">Correo Electrónico</label>
           <input
-            type="mail"
+            type="email"
             className="form-control"
             id="EmailFK"
             name="EmailFK"
-            value={patient.EmailFK || ''}
+            value={patient.EmailFK}
             onChange={handleChange}
             required
           />
@@ -145,7 +165,7 @@ function PatientRegistration() {
             className="form-control"
             id="NumeroFK"
             name="NumeroFK"
-            value={patient.NumeroFK || ''}
+            value={patient.NumeroFK}
             onChange={handleChange}
             required
           />

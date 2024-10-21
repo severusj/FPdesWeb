@@ -13,7 +13,8 @@ function PatientRegistration() {
     NumeroFK: null, // Inicializa como null, se puede ajustar más tarde
     DPI: '',
     Fecha_Cita: '',
-    Hora_Cita: ''
+    Hora_Cita: '',
+    Sintomas:''
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -48,7 +49,8 @@ function PatientRegistration() {
         NumeroFK: NumeroFK || null,
         DPI: patient.DPI,
         Fecha_Cita: patient.Fecha_Cita,
-        Hora_Cita: patient.Hora_Cita
+        Hora_Cita: patient.Hora_Cita,
+        Sintomas: patient.Sintomas
       });
       setModalMessage(response.data.message);
       setShowModal(true);
@@ -61,7 +63,8 @@ function PatientRegistration() {
         NumeroFK: null,
         DPI: '',
         Fecha_Cita: '',
-        Hora_Cita: ''
+        Hora_Cita: '',
+        Sintomas: ''
       });
     } catch (error) {
       console.error('Error al registrar paciente:', error);
@@ -181,6 +184,17 @@ function PatientRegistration() {
             value={patient.Hora_Cita}
             onChange={handleChange}
             required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="Sintomas" className="form-label">Síntomas</label>
+          <textarea
+            className="form-control"
+            id="Sintomas"
+            name="Sintomas"
+            value={patient.Sintomas}
+            onChange={handleChange}
+            placeholder="Describe los síntomas del paciente"
           />
         </div>
         <button type="submit" className="btn btn-primary w-100">Registrar Paciente</button>

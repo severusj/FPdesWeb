@@ -10,8 +10,6 @@ const localizer = momentLocalizer(moment);
 
 function AppointmentsCalendar() {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [editingEventId, setEditingEventId] = useState(null);
   const [editFormData, setEditFormData] = useState({
     fecha: '',
@@ -43,15 +41,48 @@ function AppointmentsCalendar() {
     }
   };
 
+  const showPatientInfo = (patient) => {
+    Swal.fire({
+      title: 'Información del Paciente',
+      html: `
+        <div style="text-align: left; font-size: 16px;">
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Nombre:</strong> 
+            <span style="margin-left: 8px;">${patient.Nombre_1} ${patient.Apellido_1}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">DPI:</strong> 
+            <span style="margin-left: 8px;">${patient.DPI}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Teléfono:</strong> 
+            <span style="margin-left: 8px;">${patient.NumeroFK}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Fecha:</strong> 
+            <span style="margin-left: 8px;">${moment(patient.Fecha_Cita).format('DD/MM/YYYY')}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Hora:</strong> 
+            <span style="margin-left: 8px;">${moment(patient.Hora_Cita, 'HH:mm:ss').format('HH:mm')} hrs</span>
+          </p>
+        </div>
+      `,
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#2196F3',
+      customClass: {
+        title: 'custom-swal-title',
+        popup: 'custom-swal-popup'
+      }
+    });
+  };
+
+
   const handleEditSubmit = async (e, eventData) => {
     e.preventDefault();
     
     if (!editFormData.fecha || !editFormData.hora) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Campos incompletos',
-        text: 'Por favor complete todos los campos',
-      });
+      Swal.fire('Campos incompletos', 'Por favor complete todos los campos', 'warning');
       return;
     }
   
@@ -65,55 +96,21 @@ function AppointmentsCalendar() {
       const response = await axios.put('http://localhost:5000/update-appointment', updateData);
   
       if (response.data.message) {
-        Swal.fire({
-          icon: 'success',
-          title: '¡Cita actualizada!',
-          text: response.data.message,
-          confirmButtonText: 'OK'
-        });
-  
+        Swal.fire('¡Éxito!', 'Cita actualizada correctamente', 'success');
         await fetchPatients();
         setEditingEventId(null);
-        setIsEditing(false);
-        setSelectedEvent(null);
       }
     } catch (error) {
       console.error('Error completo:', error);
       console.error('Datos de la respuesta:', error.response?.data);
-  
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar',
-        text: error.response?.data?.message || 'Error al actualizar la cita',
-      });
-    }
-  };
-
-  
-  const handleDeleteAppointment = async () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
-      try {
-        await axios.delete(`http://localhost:5000/delete-patient/${selectedEvent.patient.ID_Paciente}`);
-        await fetchPatients();
-        setSelectedEvent(null);
-        alert('Paciente eliminado exitosamente');
-      } catch (error) {
-        console.error('Error al eliminar el paciente:', error);
-        alert('Error al eliminar el paciente');
-      }
+      Swal.fire('Error', 'Error al actualizar la cita', 'error');
     }
   };
 
   const handleSelectEvent = (event) => {
-    setSelectedEvent(event);
-    setIsEditing(false);
-    setEditFormData({
-      fecha: moment(event.start).format('YYYY-MM-DD'),
-      hora: moment(event.start).format('HH:mm'),
-    });
+    showPatientInfo(event.patient);
   };
 
-  // Componente de evento en agenda con formulario de edición inline
   const AgendaEvent = ({ event }) => {
     const isEventBeingEdited = editingEventId === event.id;
 
@@ -124,6 +121,11 @@ function AppointmentsCalendar() {
         fecha: moment(event.start).format('YYYY-MM-DD'),
         hora: moment(event.start).format('HH:mm'),
       });
+    };
+
+    const handleNameClick = (e) => {
+      e.stopPropagation();
+      showPatientInfo(event.patient);
     };
 
     const handleCancelEdit = (e) => {
@@ -218,7 +220,16 @@ function AppointmentsCalendar() {
         }}
       >
         <div>
-          <span>{event.title}</span>
+          <span 
+            onClick={handleNameClick}
+            style={{ 
+              cursor: 'pointer', 
+              color: '#2196F3',
+              textDecoration: 'underline'
+            }}
+          >
+            {event.title}
+          </span>
           <span style={{ marginLeft: '10px', color: '#666' }}>
             {moment(event.start).format('DD/MM/YYYY HH:mm')}
           </span>
@@ -239,63 +250,6 @@ function AppointmentsCalendar() {
       </div>
     );
   };
-
-  const closeModal = () => {
-    setSelectedEvent(null);
-    setIsEditing(false);
-  };
-
-  const EventModal = () => (
-    <div className="modal" onClick={closeModal}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{selectedEvent.patient.Nombre_1} {selectedEvent.patient.Apellido_1}</h2>
-        {isEditing ? (
-          <form onSubmit={(e) => handleEditSubmit(e, selectedEvent)} className="edit-form">
-            <div className="form-group">
-              <label>Fecha:</label>
-              <input
-                type="date"
-                value={editFormData.fecha}
-                onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Hora:</label>
-              <input
-                type="time"
-                value={editFormData.hora}
-                onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
-                required
-              />
-            </div>
-            <div className="button-group">
-              <button type="submit" className="save-button">Guardar</button>
-              <button type="button" onClick={() => setIsEditing(false)} className="cancel-button">
-                Cancelar
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="patient-info">
-            <p><strong>DPI:</strong> {selectedEvent.patient.DPI}</p>
-            <p><strong>Fecha:</strong> {moment(selectedEvent.start).format('DD/MM/YYYY')}</p>
-            <p><strong>Hora:</strong> {moment(selectedEvent.start).format('HH:mm')}</p>
-            <p><strong>Teléfono:</strong> {selectedEvent.patient.NumeroFK}</p>
-            <div className="button-group">
-              <button onClick={() => setIsEditing(true)} className="edit-button">
-                Editar Cita
-              </button>
-              <button onClick={handleDeleteAppointment} className="delete-button">
-                Eliminar
-              </button>
-            </div>
-          </div>
-        )}
-        <button onClick={closeModal} className="close-button">Cerrar</button>
-      </div>
-    </div>
-  );
 
   return (
     <div className="module-container">
@@ -322,7 +276,6 @@ function AppointmentsCalendar() {
           }
         }}
       />
-      {selectedEvent && <EventModal />}
     </div>
   );
 }

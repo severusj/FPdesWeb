@@ -15,7 +15,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root', 
-  password: 'Test12345.',
+  password: 'emi123.',
   database: 'medic_live'
 });
 
@@ -84,20 +84,46 @@ app.post('/register-patient', (req, res) => {
       from: process.env.EMAIL_USER,
       to: EmailFK,
       subject: 'Confirmación de Registro de Paciente',
-      html: `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-          <h2 style="color: #4CAF50;">Confirmación de Registro de Paciente</h2>
-          <p>Hola <strong>${Nombre_1}</strong>,</p>
-          <p>Gracias por registrarte en <strong>MedicLive</strong>. Hemos confirmado tu cita médica.</p>
-          <p><strong>Fecha de Cita:</strong> ${Fecha_Cita}</p>
-          <p><strong>Hora de Cita:</strong> ${Hora_Cita} hrs</p>
-          <br>
-          <p>Por favor, llega al consultorio 10 minutos antes de tu cita.</p>
-          <br>
-          <p>Atentamente,</p>
-          <p><strong>MedicLive</strong></p>
-          <img src="cid:logoMedicLive" alt="MedicLive" style="width: 300px; height: 300px;"/>
-        </div>
+      html: ` 
+        <div style="font-family: 'Arial', sans-serif; color: #333; background-color: #f9f9f9; padding: 0; margin: 0; width: 100%; height: 100%;"> 
+          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;"> 
+             
+            <!-- Header --> 
+            <div style="background-image: url('https://www.example.com/banner-image.jpg'); background-size: cover; background-position: center; padding: 20px 0; text-align: center; color: white;"> 
+              <h1 style="font-size: 28px; margin: 0;">¡Tu cita está confirmada!</h1> 
+            </div> 
+ 
+            <!-- Main Content --> 
+            <div style="padding: 20px 30px; background-color: #ffffff;"> 
+              <h2 style="color: #4CAF50; font-size: 24px;">Confirmación de Registro de Paciente</h2> 
+              <p style="font-size: 16px;">Hola <strong style="color: #4CAF50;">${Nombre_1}</strong>,</p> 
+              <p style="font-size: 16px;">Gracias por registrarte en <strong>MedicLive</strong>. Hemos confirmado tu cita con un médico.</p> 
+               
+              <!-- Appointment Details with Icons --> 
+              <div style="background-color: #f4f4f4; border-radius: 8px; padding: 15px; margin-top: 15px;"> 
+                <p style="font-size: 16px; margin: 0;"> 
+                  <img src="https://forum.nourity.org/uploads/default/original/1X/38b6658eda257c2a5348fe1e037975b53c9e3187.png" alt="Calendario" style="width: 20px; vertical-align: middle; margin-right: 8px;"> 
+                  <strong>Fecha de Cita:</strong> <span style="color: #4CAF50;">${Fecha_Cita}</span> 
+                </p> 
+                <p style="font-size: 16px; margin: 10px 0 0 0;"> 
+                  <img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" alt="Reloj" style="width: 20px; vertical-align: middle; margin-right: 8px;"> 
+                  <strong>Hora de Cita:</strong> <span style="color: #4CAF50;">${Hora_Cita} hrs</span> 
+                </p> 
+              </div> 
+ 
+              <!-- Instructions --> 
+              <p style="font-size: 16px; margin-top: 20px; line-height: 1.6;">Por favor, llega al consultorio 10 minutos antes de tu cita para facilitar el proceso de registro.</p> 
+            </div> 
+ 
+            <!-- Footer --> 
+            <div style="padding: 20px; background-color: #4CAF50; color: white; text-align: center;"> 
+              <p style="font-size: 16px; margin: 0;">Atentamente,</p> 
+              <p style="font-size: 16px; margin: 5px 0 20px 0; font-weight: bold;">MedicLive</p> 
+              <img src="cid:logoMedicLive" alt="MedicLive" style="width: 100px; height: 100px; margin-top: 10px;"/> 
+              <p style="font-size: 14px; margin-top: 15px; color: #ffffff;">© 2024 MedicLive. Todos los derechos reservados.</p> 
+            </div> 
+          </div> 
+        </div> 
       `,
       attachments: [
         {

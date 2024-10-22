@@ -15,7 +15,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root', 
-  password: 'emi123.',
+  password: 'Test12345.',
   database: 'medic_live'
 });
 
@@ -132,7 +132,7 @@ app.get ('/get-patient', (req, res) => {
 })});
 
 
-// Update the update-appointment endpoint
+
 // Tu ruta de actualización
 app.put('/update-appointment', (req, res) => {
   const { ID_Paciente, Fecha_Cita, Hora_Cita } = req.body;

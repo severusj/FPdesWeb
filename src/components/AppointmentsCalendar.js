@@ -4,6 +4,7 @@ import moment from 'moment';
 import axios from 'axios';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './AppointmentsCalendar.css';
+import Swal from 'sweetalert2';
 
 const localizer = momentLocalizer(moment);
 
@@ -46,7 +47,11 @@ function AppointmentsCalendar() {
     e.preventDefault();
     
     if (!editFormData.fecha || !editFormData.hora) {
-      alert('Por favor complete todos los campos');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor complete todos los campos',
+      });
       return;
     }
   
@@ -56,14 +61,17 @@ function AppointmentsCalendar() {
       Hora_Cita: editFormData.hora + ':00'
     };
   
-    console.log('Enviando datos de actualización:', updateData);
-  
     try {
       const response = await axios.put('http://localhost:5000/update-appointment', updateData);
-      console.log('Respuesta del servidor:', response.data);
   
       if (response.data.message) {
-        alert(response.data.message);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Cita actualizada!',
+          text: response.data.message,
+          confirmButtonText: 'OK'
+        });
+  
         await fetchPatients();
         setEditingEventId(null);
         setIsEditing(false);
@@ -72,7 +80,12 @@ function AppointmentsCalendar() {
     } catch (error) {
       console.error('Error completo:', error);
       console.error('Datos de la respuesta:', error.response?.data);
-      alert(error.response?.data?.message || 'Error al actualizar la cita');
+  
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar',
+        text: error.response?.data?.message || 'Error al actualizar la cita',
+      });
     }
   };
 

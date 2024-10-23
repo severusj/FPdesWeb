@@ -32,6 +32,37 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+app.post('/chatgpt', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    const systemMessage = {
+      role: 'system',
+      content: 'Eres un médico experto. Habla con términos técnicos y proporciona explicaciones detalladas sobre diagnósticos médicos, planes de acción y procesos clínicos.'
+    };
+
+    const userMessage = {
+      role: 'user',
+      content: prompt
+    };
+
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-3.5-turbo',
+      messages: [systemMessage, userMessage],
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const answer = response.data.choices[0].message.content;
+    res.json({ answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al comunicarse con la API de OpenAI');
+  }
+});
+
 // Endpoint para la API de ChatGPT
 app.post('/register-patient', async (req, res) => {
   const { Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita, Sintomas } = req.body;
@@ -115,21 +146,30 @@ app.post('/register-patient', async (req, res) => {
 });
 
 
-app.get ('/get-patient', (req, res) => { 
+app.get('/get-patient', async (req, res) => { 
   const sql = 'SELECT * FROM Paciente';
-  db.query(sql, (error, results) => { 
-    if (error) {
-      return res.status(500).json({ message: 'Error al obtener pacientes' });
-    }
-    console.log(results)
+  
+  let connection;
+
+  try {
+    connection = await connectDB();
+    const [results] = await connection.query(sql);
     res.json(results);
-})});
+  } catch (error) {
+    console.error('Error al obtener pacientes:', error);
+    return res.status(500).json({ message: 'Error al obtener pacientes' });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+});
 
 
 
 // Tu ruta de actualización
 // Actualizar el endpoint existente de actualización para incluir el status
-app.put('/update-appointment', (req, res) => {
+app.put('/update-appointment', async (req, res) => {
   const { ID_Paciente, Fecha_Cita, Hora_Cita, Status_Cita } = req.body;
 
   if (!ID_Paciente || !Fecha_Cita || !Hora_Cita) {
@@ -141,7 +181,6 @@ app.put('/update-appointment', (req, res) => {
   let sql = 'UPDATE paciente SET Fecha_Cita = ?, Hora_Cita = ?';
   let params = [Fecha_Cita, Hora_Cita];
 
-  // Agregar Status_Cita al update si se proporciona
   if (Status_Cita) {
     if (!['activa', 'completado'].includes(Status_Cita)) {
       return res.status(400).json({ 
@@ -155,13 +194,11 @@ app.put('/update-appointment', (req, res) => {
   sql += ' WHERE ID_Paciente = ?';
   params.push(ID_Paciente);
   
-  db.query(sql, params, (error, results) => {
-    if (error) {
-      console.error('Error al actualizar cita:', error);
-      return res.status(500).json({ 
-        message: 'Error al actualizar cita' 
-      });
-    }
+  let connection;
+
+  try {
+    connection = await connectDB();
+    const [results] = await connection.query(sql, params);
     
     if (results.affectedRows === 0) {
       return res.status(404).json({ 
@@ -172,31 +209,41 @@ app.put('/update-appointment', (req, res) => {
     res.status(200).json({ 
       message: 'Cita actualizada con éxito' 
     });
-  });
+  } catch (error) {
+    console.error('Error al actualizar cita:', error);
+    return res.status(500).json({ 
+      message: 'Error al actualizar cita' 
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
 });
 
-app.put('/update-appointment-status', (req, res) => {
+app.put('/update-appointment-status', async (req, res) => {
   const { ID_Paciente, Status_Cita } = req.body;
+  
   if (!ID_Paciente || !Status_Cita) {
     return res.status(400).json({ 
       message: 'Se requieren ID_Paciente y Status_Cita' 
     });
   }
+  
   if (!['activa', 'completado'].includes(Status_Cita)) {
     return res.status(400).json({ 
       message: 'Status_Cita debe ser "activa" o "completado"' 
     });
   }
+  
   const sql = 'UPDATE paciente SET Status_Cita = ? WHERE ID_Paciente = ?';
   const params = [Status_Cita, ID_Paciente];
-  
-  db.query(sql, params, (error, results) => {
-    if (error) {
-      console.error('Error al actualizar estado:', error);
-      return res.status(500).json({ 
-        message: 'Error al actualizar estado' 
-      });
-    }
+
+  let connection;
+
+  try {
+    connection = await connectDB();
+    const [results] = await connection.query(sql, params);
     
     if (results.affectedRows === 0) {
       return res.status(404).json({ 
@@ -207,7 +254,16 @@ app.put('/update-appointment-status', (req, res) => {
     res.status(200).json({ 
       message: 'Estado actualizado con éxito' 
     });
-  });
+  } catch (error) {
+    console.error('Error al actualizar estado:', error);
+    return res.status(500).json({ 
+      message: 'Error al actualizar estado' 
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
 });
 
 

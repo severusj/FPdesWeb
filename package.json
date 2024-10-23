@@ -22,7 +22,10 @@
     "nodemon": "^3.1.7",
     "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
+<<<<<<< HEAD
     "qrcode": "^1.5.4",
+=======
+>>>>>>> c6bf462f4e47442cb967a1617c1c2735795f5f36
     "react": "^18.3.1",
     "react-big-calendar": "^1.15.0",
     "react-bootstrap": "^2.10.5",

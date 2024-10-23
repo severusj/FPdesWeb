@@ -96,10 +96,14 @@ app.post('/register-patient', async (req, res) => {
         }
       ]
     };
-
-    await transporter.sendMail(mailOptions);
-    console.log('Correo enviado');
-    return res.status(200).json({ message: 'Paciente registrado con éxito y correo enviado' });
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log('Correo enviado');
+      return res.status(200).json({ message: 'Paciente registrado con éxito y correo enviado' });
+    } catch (error) {
+      console.error('Error al enviar el correo:', mailError);
+      return res.status(500).json({ message: 'Paciente registrado, pero ocurrió un error al enviar el correo' });
+    }
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ message: 'Error al registrar paciente o al enviar el correo' });

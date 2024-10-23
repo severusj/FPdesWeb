@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import Swal from 'sweetalert2'; // Importa SweetAlert2
 
 function PatientRegistration() {
   const [patient, setPatient] = useState({
@@ -17,16 +16,13 @@ function PatientRegistration() {
     Sintomas: ''
   });
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Valida el formato del correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   const validateDPI = (dpi) => {
-    const dpiRegex = /^\d{13}$/; // Valida que el DPI tenga exactamente 13 dígitos numéricos
+    const dpiRegex = /^\d{13}$/;
     return dpiRegex.test(dpi);
   };
 
@@ -38,28 +34,33 @@ function PatientRegistration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verifica que todos los campos requeridos no estén vacíos
     if (!patient.Nombre_1 || !patient.Apellido_1 || !patient.DPI || !patient.Fecha_Cita) {
-      setModalMessage('Por favor, completa todos los campos obligatorios.');
-      setShowModal(true);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor, completa todos los campos obligatorios.',
+      });
       return;
     }
 
-    // Validación de correo electrónico
     if (!validateEmail(patient.EmailFK)) {
-      setModalMessage('Por favor, ingresa un correo electrónico válido.');
-      setShowModal(true);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor, ingresa un correo electrónico válido.',
+      });
       return;
     }
 
-    // Validación de DPI
     if (!validateDPI(patient.DPI)) {
-      setModalMessage('El DPI debe contener exactamente 13 dígitos.');
-      setShowModal(true);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El DPI debe contener exactamente 13 dígitos.',
+      });
       return;
     }
 
-    // Envia la solicitud al servidor
     try {
       const response = await axios.post('http://localhost:5000/register-patient', {
         Nombre_1: patient.Nombre_1,
@@ -73,8 +74,14 @@ function PatientRegistration() {
         Hora_Cita: patient.Hora_Cita,
         Sintomas: patient.Sintomas
       });
-      setModalMessage(response.data.message);
-      setShowModal(true);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: response.data.message,
+      });
+
+      // Reiniciar el formulario
       setPatient({
         Nombre_1: '',
         Nombre_2: '',
@@ -89,12 +96,13 @@ function PatientRegistration() {
       });
     } catch (error) {
       console.error('Error al registrar paciente:', error);
-      setModalMessage('Error al registrar paciente');
-      setShowModal(true);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al registrar paciente',
+      });
     }
   };
-
-  const closeModal = () => setShowModal(false);
 
   return (
     <div className="container mt-5">
@@ -219,19 +227,6 @@ function PatientRegistration() {
         </div>
         <button type="submit" className="btn btn-primary w-100">Registrar Paciente</button>
       </form>
-
-      {/* Modal de confirmación */}
-      <Modal show={showModal} onHide={closeModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Registro de Pacientes</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{modalMessage}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={closeModal}>
-            Cerrar
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 }

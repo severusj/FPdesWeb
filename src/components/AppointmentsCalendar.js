@@ -4,13 +4,12 @@ import moment from 'moment';
 import axios from 'axios';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './AppointmentsCalendar.css';
+import Swal from 'sweetalert2';
 
 const localizer = momentLocalizer(moment);
 
 function AppointmentsCalendar() {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [editingEventId, setEditingEventId] = useState(null);
   const [editFormData, setEditFormData] = useState({
     fecha: '',
@@ -34,6 +33,7 @@ function AppointmentsCalendar() {
           start: startDate,
           end: endDate,
           patient: patient,
+          status: patient.Status_Cita || 'activa',
         };
       });
       setEvents(appointments);
@@ -42,67 +42,109 @@ function AppointmentsCalendar() {
     }
   };
 
+  const handleStatusChange = async (eventData) => {
+    const newStatus = eventData.patient.Status_Cita === 'activa' ? 'completado' : 'activa';
+    
+    try {
+      const response = await axios.put('http://localhost:5000/update-appointment-status', {
+        ID_Paciente: eventData.patient.ID_Paciente,
+        Status_Cita: newStatus
+      });
+        console.log("response", response)
+      if (response.data.message) {
+        await fetchPatients();
+        Swal.fire({
+          title: '¡Estado actualizado!',
+          text: `La cita ha sido marcada como ${newStatus}`,
+          icon: 'success',
+          confirmButtonColor: '#2196F3'
+        });
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estado:', error);
+      Swal.fire('Error', 'No se pudo actualizar el estado de la cita', 'error');
+    }
+  };
+
+  const showPatientInfo = (patient) => {
+    Swal.fire({
+      title: 'Información del Paciente',
+      html: `
+        <div style="text-align: left; font-size: 16px;">
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Nombre:</strong> 
+            <span style="margin-left: 8px;">${patient.Nombre_1} ${patient.Apellido_1}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">DPI:</strong> 
+            <span style="margin-left: 8px;">${patient.DPI}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Teléfono:</strong> 
+            <span style="margin-left: 8px;">${patient.NumeroFK}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Fecha:</strong> 
+            <span style="margin-left: 8px;">${moment(patient.Fecha_Cita).format('DD/MM/YYYY')}</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Hora:</strong> 
+            <span style="margin-left: 8px;">${moment(patient.Hora_Cita, 'HH:mm:ss').format('HH:mm')} hrs</span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Estado:</strong> 
+            <span style="margin-left: 8px; color: ${patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800'}">
+              ${patient.Status_Cita || 'activa'}
+            </span>
+          </p>
+        </div>
+      `,
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#2196F3',
+      customClass: {
+        title: 'custom-swal-title',
+        popup: 'custom-swal-popup'
+      }
+    });
+  };
+
   const handleEditSubmit = async (e, eventData) => {
     e.preventDefault();
     
     if (!editFormData.fecha || !editFormData.hora) {
-      alert('Por favor complete todos los campos');
+      Swal.fire('Campos incompletos', 'Por favor complete todos los campos', 'warning');
       return;
     }
   
     const updateData = {
       ID_Paciente: eventData.patient.ID_Paciente,
       Fecha_Cita: editFormData.fecha,
-      Hora_Cita: editFormData.hora + ':00'
+      Hora_Cita: editFormData.hora + ':00',
+      Status_Cita: eventData.patient.Status_Cita // Mantener el estado actual
     };
-  
-    console.log('Enviando datos de actualización:', updateData);
   
     try {
       const response = await axios.put('http://localhost:5000/update-appointment', updateData);
-      console.log('Respuesta del servidor:', response.data);
   
       if (response.data.message) {
-        alert(response.data.message);
+        Swal.fire('¡Éxito!', 'Cita actualizada correctamente', 'success');
         await fetchPatients();
         setEditingEventId(null);
-        setIsEditing(false);
-        setSelectedEvent(null);
       }
     } catch (error) {
       console.error('Error completo:', error);
       console.error('Datos de la respuesta:', error.response?.data);
-      alert(error.response?.data?.message || 'Error al actualizar la cita');
-    }
-  };
-
-  
-  const handleDeleteAppointment = async () => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
-      try {
-        await axios.delete(`http://localhost:5000/delete-patient/${selectedEvent.patient.ID_Paciente}`);
-        await fetchPatients();
-        setSelectedEvent(null);
-        alert('Paciente eliminado exitosamente');
-      } catch (error) {
-        console.error('Error al eliminar el paciente:', error);
-        alert('Error al eliminar el paciente');
-      }
+      Swal.fire('Error', 'Error al actualizar la cita', 'error');
     }
   };
 
   const handleSelectEvent = (event) => {
-    setSelectedEvent(event);
-    setIsEditing(false);
-    setEditFormData({
-      fecha: moment(event.start).format('YYYY-MM-DD'),
-      hora: moment(event.start).format('HH:mm'),
-    });
+    showPatientInfo(event.patient);
   };
 
-  // Componente de evento en agenda con formulario de edición inline
   const AgendaEvent = ({ event }) => {
     const isEventBeingEdited = editingEventId === event.id;
+    const statusColor = event.patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800';
 
     const handleEditClick = (e) => {
       e.stopPropagation();
@@ -111,6 +153,11 @@ function AppointmentsCalendar() {
         fecha: moment(event.start).format('YYYY-MM-DD'),
         hora: moment(event.start).format('HH:mm'),
       });
+    };
+
+    const handleNameClick = (e) => {
+      e.stopPropagation();
+      showPatientInfo(event.patient);
     };
 
     const handleCancelEdit = (e) => {
@@ -201,88 +248,71 @@ function AppointmentsCalendar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '8px'
+          padding: '8px',
+          backgroundColor: event.patient.Status_Cita === 'completado' ? '#E8F5E9' : '#FFF3E0',
+          borderLeft: `4px solid ${statusColor}`,
+          borderRadius: '4px'
         }}
       >
         <div>
-          <span>{event.title}</span>
+          <span 
+            onClick={handleNameClick}
+            style={{ 
+              cursor: 'pointer', 
+              color: '#2196F3',
+              textDecoration: 'underline'
+            }}
+          >
+            {event.title}
+          </span>
           <span style={{ marginLeft: '10px', color: '#666' }}>
             {moment(event.start).format('DD/MM/YYYY HH:mm')}
           </span>
+          <span 
+            style={{ 
+              marginLeft: '10px', 
+              color: statusColor,
+              fontWeight: 'bold',
+              fontSize: '0.9em'
+            }}
+          >
+            {event.patient.Status_Cita || 'activa'}
+          </span>
         </div>
-        <button 
-          onClick={handleEditClick}
-          style={{
-            padding: '4px 8px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Editar
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStatusChange(event);
+            }}
+            style={{
+              padding: '4px 8px',
+              backgroundColor: statusColor,
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
+          </button>
+          <button 
+            onClick={handleEditClick}
+            style={{
+              padding: '4px 8px',
+              backgroundColor: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Editar
+          </button>
+        </div>
       </div>
     );
   };
-
-  const closeModal = () => {
-    setSelectedEvent(null);
-    setIsEditing(false);
-  };
-
-  const EventModal = () => (
-    <div className="modal" onClick={closeModal}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{selectedEvent.patient.Nombre_1} {selectedEvent.patient.Apellido_1}</h2>
-        {isEditing ? (
-          <form onSubmit={(e) => handleEditSubmit(e, selectedEvent)} className="edit-form">
-            <div className="form-group">
-              <label>Fecha:</label>
-              <input
-                type="date"
-                value={editFormData.fecha}
-                onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Hora:</label>
-              <input
-                type="time"
-                value={editFormData.hora}
-                onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
-                required
-              />
-            </div>
-            <div className="button-group">
-              <button type="submit" className="save-button">Guardar</button>
-              <button type="button" onClick={() => setIsEditing(false)} className="cancel-button">
-                Cancelar
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="patient-info">
-            <p><strong>DPI:</strong> {selectedEvent.patient.DPI}</p>
-            <p><strong>Fecha:</strong> {moment(selectedEvent.start).format('DD/MM/YYYY')}</p>
-            <p><strong>Hora:</strong> {moment(selectedEvent.start).format('HH:mm')}</p>
-            <p><strong>Teléfono:</strong> {selectedEvent.patient.NumeroFK}</p>
-            <div className="button-group">
-              <button onClick={() => setIsEditing(true)} className="edit-button">
-                Editar Cita
-              </button>
-              <button onClick={handleDeleteAppointment} className="delete-button">
-                Eliminar
-              </button>
-            </div>
-          </div>
-        )}
-        <button onClick={closeModal} className="close-button">Cerrar</button>
-      </div>
-    </div>
-  );
 
   return (
     <div className="module-container">
@@ -308,8 +338,13 @@ function AppointmentsCalendar() {
             event: AgendaEvent
           }
         }}
+        eventPropGetter={(event) => ({
+          style: {
+            backgroundColor: event.patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800',
+            borderColor: event.patient.Status_Cita === 'completado' ? '#2E7D32' : '#F57C00'
+          }
+        })}
       />
-      {selectedEvent && <EventModal />}
     </div>
   );
 }

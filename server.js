@@ -84,20 +84,46 @@ app.post('/register-patient', (req, res) => {
       from: process.env.EMAIL_USER,
       to: EmailFK,
       subject: 'Confirmación de Registro de Paciente',
-      html: `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-          <h2 style="color: #4CAF50;">Confirmación de Registro de Paciente</h2>
-          <p>Hola <strong>${Nombre_1}</strong>,</p>
-          <p>Gracias por registrarte en <strong>MedicLive</strong>. Hemos confirmado tu cita médica.</p>
-          <p><strong>Fecha de Cita:</strong> ${Fecha_Cita}</p>
-          <p><strong>Hora de Cita:</strong> ${Hora_Cita} hrs</p>
-          <br>
-          <p>Por favor, llega al consultorio 10 minutos antes de tu cita.</p>
-          <br>
-          <p>Atentamente,</p>
-          <p><strong>MedicLive</strong></p>
-          <img src="cid:logoMedicLive" alt="MedicLive" style="width: 300px; height: 300px;"/>
-        </div>
+      html: ` 
+        <div style="font-family: 'Arial', sans-serif; color: #333; background-color: #f9f9f9; padding: 0; margin: 0; width: 100%; height: 100%;"> 
+          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;"> 
+             
+            <!-- Header --> 
+            <div style="background-image: url('https://www.example.com/banner-image.jpg'); background-size: cover; background-position: center; padding: 20px 0; text-align: center; color: white;"> 
+              <h1 style="font-size: 28px; margin: 0;">¡Tu cita está confirmada!</h1> 
+            </div> 
+ 
+            <!-- Main Content --> 
+            <div style="padding: 20px 30px; background-color: #ffffff;"> 
+              <h2 style="color: #4CAF50; font-size: 24px;">Confirmación de Registro de Paciente</h2> 
+              <p style="font-size: 16px;">Hola <strong style="color: #4CAF50;">${Nombre_1}</strong>,</p> 
+              <p style="font-size: 16px;">Gracias por registrarte en <strong>MedicLive</strong>. Hemos confirmado tu cita con un médico.</p> 
+               
+              <!-- Appointment Details with Icons --> 
+              <div style="background-color: #f4f4f4; border-radius: 8px; padding: 15px; margin-top: 15px;"> 
+                <p style="font-size: 16px; margin: 0;"> 
+                  <img src="https://forum.nourity.org/uploads/default/original/1X/38b6658eda257c2a5348fe1e037975b53c9e3187.png" alt="Calendario" style="width: 20px; vertical-align: middle; margin-right: 8px;"> 
+                  <strong>Fecha de Cita:</strong> <span style="color: #4CAF50;">${Fecha_Cita}</span> 
+                </p> 
+                <p style="font-size: 16px; margin: 10px 0 0 0;"> 
+                  <img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" alt="Reloj" style="width: 20px; vertical-align: middle; margin-right: 8px;"> 
+                  <strong>Hora de Cita:</strong> <span style="color: #4CAF50;">${Hora_Cita} hrs</span> 
+                </p> 
+              </div> 
+ 
+              <!-- Instructions --> 
+              <p style="font-size: 16px; margin-top: 20px; line-height: 1.6;">Por favor, llega al consultorio 10 minutos antes de tu cita para facilitar el proceso de registro.</p> 
+            </div> 
+ 
+            <!-- Footer --> 
+            <div style="padding: 20px; background-color: #4CAF50; color: white; text-align: center;"> 
+              <p style="font-size: 16px; margin: 0;">Atentamente,</p> 
+              <p style="font-size: 16px; margin: 5px 0 20px 0; font-weight: bold;">MedicLive</p> 
+              <img src="cid:logoMedicLive" alt="MedicLive" style="width: 100px; height: 100px; margin-top: 10px;"/> 
+              <p style="font-size: 14px; margin-top: 15px; color: #ffffff;">© 2024 MedicLive. Todos los derechos reservados.</p> 
+            </div> 
+          </div> 
+        </div> 
       `,
       attachments: [
         {
@@ -132,26 +158,87 @@ app.get ('/get-patient', (req, res) => {
 })});
 
 
-// Update the update-appointment endpoint
+
 // Tu ruta de actualización
+// Actualizar el endpoint existente de actualización para incluir el status
 app.put('/update-appointment', (req, res) => {
-  const { ID_Paciente, Fecha_Cita, Hora_Cita } = req.body;
+  const { ID_Paciente, Fecha_Cita, Hora_Cita, Status_Cita } = req.body;
 
   if (!ID_Paciente || !Fecha_Cita || !Hora_Cita) {
-    return res.status(400).json({ message: 'Se requieren ID_Paciente, Fecha_Cita y Hora_Cita' });
+    return res.status(400).json({ 
+      message: 'Se requieren ID_Paciente, Fecha_Cita y Hora_Cita' 
+    });
   }
 
-  const sql = 'UPDATE paciente SET Fecha_Cita = ?, Hora_Cita = ? WHERE ID_Paciente = ?';
+  let sql = 'UPDATE paciente SET Fecha_Cita = ?, Hora_Cita = ?';
+  let params = [Fecha_Cita, Hora_Cita];
+
+  // Agregar Status_Cita al update si se proporciona
+  if (Status_Cita) {
+    if (!['activa', 'completado'].includes(Status_Cita)) {
+      return res.status(400).json({ 
+        message: 'Status_Cita debe ser "activa" o "completado"' 
+      });
+    }
+    sql += ', Status_Cita = ?';
+    params.push(Status_Cita);
+  }
+
+  sql += ' WHERE ID_Paciente = ?';
+  params.push(ID_Paciente);
   
-  db.query(sql, [Fecha_Cita, Hora_Cita, ID_Paciente], (error, results) => {
+  db.query(sql, params, (error, results) => {
     if (error) {
       console.error('Error al actualizar cita:', error);
-      return res.status(500).json({ message: 'Error al actualizar cita' });
+      return res.status(500).json({ 
+        message: 'Error al actualizar cita' 
+      });
     }
+    
     if (results.affectedRows === 0) {
-      return res.status(404).json({ message: 'Paciente no encontrado' });
+      return res.status(404).json({ 
+        message: 'Paciente no encontrado' 
+      });
     }
-    res.status(200).json({ message: 'Cita actualizada con éxito' });
+    
+    res.status(200).json({ 
+      message: 'Cita actualizada con éxito' 
+    });
+  });
+});
+
+app.put('/update-appointment-status', (req, res) => {
+  const { ID_Paciente, Status_Cita } = req.body;
+  if (!ID_Paciente || !Status_Cita) {
+    return res.status(400).json({ 
+      message: 'Se requieren ID_Paciente y Status_Cita' 
+    });
+  }
+  if (!['activa', 'completado'].includes(Status_Cita)) {
+    return res.status(400).json({ 
+      message: 'Status_Cita debe ser "activa" o "completado"' 
+    });
+  }
+  const sql = 'UPDATE paciente SET Status_Cita = ? WHERE ID_Paciente = ?';
+  const params = [Status_Cita, ID_Paciente];
+  
+  db.query(sql, params, (error, results) => {
+    if (error) {
+      console.error('Error al actualizar estado:', error);
+      return res.status(500).json({ 
+        message: 'Error al actualizar estado' 
+      });
+    }
+    
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ 
+        message: 'Paciente no encontrado' 
+      });
+    }
+    
+    res.status(200).json({ 
+      message: 'Estado actualizado con éxito' 
+    });
   });
 });
 

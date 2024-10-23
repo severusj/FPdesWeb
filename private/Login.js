@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
     res.send('hola');
 });
 
-app.listen(5000, () => {
+app.listen(2000, () => {
     console.log('server iniciado');
 });
 

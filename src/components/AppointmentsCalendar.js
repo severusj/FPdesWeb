@@ -33,11 +33,36 @@ function AppointmentsCalendar() {
           start: startDate,
           end: endDate,
           patient: patient,
+          status: patient.Status_Cita || 'activa',
         };
       });
       setEvents(appointments);
     } catch (error) {
       console.error('Error al obtener los pacientes:', error);
+    }
+  };
+
+  const handleStatusChange = async (eventData) => {
+    const newStatus = eventData.patient.Status_Cita === 'activa' ? 'completado' : 'activa';
+    
+    try {
+      const response = await axios.put('http://localhost:5000/update-appointment-status', {
+        ID_Paciente: eventData.patient.ID_Paciente,
+        Status_Cita: newStatus
+      });
+        console.log("response", response)
+      if (response.data.message) {
+        await fetchPatients();
+        Swal.fire({
+          title: '¡Estado actualizado!',
+          text: `La cita ha sido marcada como ${newStatus}`,
+          icon: 'success',
+          confirmButtonColor: '#2196F3'
+        });
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estado:', error);
+      Swal.fire('Error', 'No se pudo actualizar el estado de la cita', 'error');
     }
   };
 
@@ -66,6 +91,12 @@ function AppointmentsCalendar() {
             <strong style="color: #2196F3;">Hora:</strong> 
             <span style="margin-left: 8px;">${moment(patient.Hora_Cita, 'HH:mm:ss').format('HH:mm')} hrs</span>
           </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Estado:</strong> 
+            <span style="margin-left: 8px; color: ${patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800'}">
+              ${patient.Status_Cita || 'activa'}
+            </span>
+          </p>
         </div>
       `,
       confirmButtonText: 'Cerrar',
@@ -76,7 +107,6 @@ function AppointmentsCalendar() {
       }
     });
   };
-
 
   const handleEditSubmit = async (e, eventData) => {
     e.preventDefault();
@@ -89,7 +119,8 @@ function AppointmentsCalendar() {
     const updateData = {
       ID_Paciente: eventData.patient.ID_Paciente,
       Fecha_Cita: editFormData.fecha,
-      Hora_Cita: editFormData.hora + ':00'
+      Hora_Cita: editFormData.hora + ':00',
+      Status_Cita: eventData.patient.Status_Cita // Mantener el estado actual
     };
   
     try {
@@ -113,6 +144,7 @@ function AppointmentsCalendar() {
 
   const AgendaEvent = ({ event }) => {
     const isEventBeingEdited = editingEventId === event.id;
+    const statusColor = event.patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800';
 
     const handleEditClick = (e) => {
       e.stopPropagation();
@@ -216,7 +248,10 @@ function AppointmentsCalendar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '8px'
+          padding: '8px',
+          backgroundColor: event.patient.Status_Cita === 'completado' ? '#E8F5E9' : '#FFF3E0',
+          borderLeft: `4px solid ${statusColor}`,
+          borderRadius: '4px'
         }}
       >
         <div>
@@ -233,20 +268,48 @@ function AppointmentsCalendar() {
           <span style={{ marginLeft: '10px', color: '#666' }}>
             {moment(event.start).format('DD/MM/YYYY HH:mm')}
           </span>
+          <span 
+            style={{ 
+              marginLeft: '10px', 
+              color: statusColor,
+              fontWeight: 'bold',
+              fontSize: '0.9em'
+            }}
+          >
+            {event.patient.Status_Cita || 'activa'}
+          </span>
         </div>
-        <button 
-          onClick={handleEditClick}
-          style={{
-            padding: '4px 8px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Editar
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStatusChange(event);
+            }}
+            style={{
+              padding: '4px 8px',
+              backgroundColor: statusColor,
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
+          </button>
+          <button 
+            onClick={handleEditClick}
+            style={{
+              padding: '4px 8px',
+              backgroundColor: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Editar
+          </button>
+        </div>
       </div>
     );
   };
@@ -275,6 +338,12 @@ function AppointmentsCalendar() {
             event: AgendaEvent
           }
         }}
+        eventPropGetter={(event) => ({
+          style: {
+            backgroundColor: event.patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800',
+            borderColor: event.patient.Status_Cita === 'completado' ? '#2E7D32' : '#F57C00'
+          }
+        })}
       />
     </div>
   );

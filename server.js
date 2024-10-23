@@ -160,24 +160,85 @@ app.get ('/get-patient', (req, res) => {
 
 
 // Tu ruta de actualización
+// Actualizar el endpoint existente de actualización para incluir el status
 app.put('/update-appointment', (req, res) => {
-  const { ID_Paciente, Fecha_Cita, Hora_Cita } = req.body;
+  const { ID_Paciente, Fecha_Cita, Hora_Cita, Status_Cita } = req.body;
 
   if (!ID_Paciente || !Fecha_Cita || !Hora_Cita) {
-    return res.status(400).json({ message: 'Se requieren ID_Paciente, Fecha_Cita y Hora_Cita' });
+    return res.status(400).json({ 
+      message: 'Se requieren ID_Paciente, Fecha_Cita y Hora_Cita' 
+    });
   }
 
-  const sql = 'UPDATE paciente SET Fecha_Cita = ?, Hora_Cita = ? WHERE ID_Paciente = ?';
+  let sql = 'UPDATE paciente SET Fecha_Cita = ?, Hora_Cita = ?';
+  let params = [Fecha_Cita, Hora_Cita];
+
+  // Agregar Status_Cita al update si se proporciona
+  if (Status_Cita) {
+    if (!['activa', 'completado'].includes(Status_Cita)) {
+      return res.status(400).json({ 
+        message: 'Status_Cita debe ser "activa" o "completado"' 
+      });
+    }
+    sql += ', Status_Cita = ?';
+    params.push(Status_Cita);
+  }
+
+  sql += ' WHERE ID_Paciente = ?';
+  params.push(ID_Paciente);
   
-  db.query(sql, [Fecha_Cita, Hora_Cita, ID_Paciente], (error, results) => {
+  db.query(sql, params, (error, results) => {
     if (error) {
       console.error('Error al actualizar cita:', error);
-      return res.status(500).json({ message: 'Error al actualizar cita' });
+      return res.status(500).json({ 
+        message: 'Error al actualizar cita' 
+      });
     }
+    
     if (results.affectedRows === 0) {
-      return res.status(404).json({ message: 'Paciente no encontrado' });
+      return res.status(404).json({ 
+        message: 'Paciente no encontrado' 
+      });
     }
-    res.status(200).json({ message: 'Cita actualizada con éxito' });
+    
+    res.status(200).json({ 
+      message: 'Cita actualizada con éxito' 
+    });
+  });
+});
+
+app.put('/update-appointment-status', (req, res) => {
+  const { ID_Paciente, Status_Cita } = req.body;
+  if (!ID_Paciente || !Status_Cita) {
+    return res.status(400).json({ 
+      message: 'Se requieren ID_Paciente y Status_Cita' 
+    });
+  }
+  if (!['activa', 'completado'].includes(Status_Cita)) {
+    return res.status(400).json({ 
+      message: 'Status_Cita debe ser "activa" o "completado"' 
+    });
+  }
+  const sql = 'UPDATE paciente SET Status_Cita = ? WHERE ID_Paciente = ?';
+  const params = [Status_Cita, ID_Paciente];
+  
+  db.query(sql, params, (error, results) => {
+    if (error) {
+      console.error('Error al actualizar estado:', error);
+      return res.status(500).json({ 
+        message: 'Error al actualizar estado' 
+      });
+    }
+    
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ 
+        message: 'Paciente no encontrado' 
+      });
+    }
+    
+    res.status(200).json({ 
+      message: 'Estado actualizado con éxito' 
+    });
   });
 });
 

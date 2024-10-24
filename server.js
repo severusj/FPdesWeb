@@ -77,8 +77,8 @@ app.post('/register-patient', async (req, res) => {
     connection = await connectDB(); // Conecta a la base de datos
     await connection.query(sql, [Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita, Sintomas]);
 
-    const qrData = `Nombre: ${Nombre_1}\n DPI: ${DPI}\n Fecha: ${Fecha_Cita}\n Hora: ${Hora_Cita}`; // Asegúrate de definir qrData aquí
-    const qrCodeFilePath = path.join(__dirname, 'public/utils/qrCodes', `${DPI}.png`);
+    const qrData = `Nombre: ${Nombre_1} ${Apellido_1} \n DPI: ${DPI}\n Fecha: ${Fecha_Cita}\n Hora: ${Hora_Cita}`; // Asegúrate de definir qrData aquí
+    const qrCodeFilePath = path.join(__dirname, 'public/utils/qrCodes', `qr.png`);
     await QRCode.toFile(qrCodeFilePath, qrData); // Guarda el QR como un archivo PNG
 
     // Envía el correo después de insertar en la base de datos
@@ -138,20 +138,29 @@ app.post('/register-patient', async (req, res) => {
           cid: 'logoMedicLive'
         },
         {
-          filename: `${DPI}.png`,
+          filename: `qr.png`,
           path: qrCodeFilePath,
           cid: 'qrCode'
         }
       ]
     };
+
+
     try {
       await transporter.sendMail(mailOptions);
       console.log('Correo enviado');
+      fs.unlink(qrCodeFilePath, (err) => {
+        if (err) console.error('Error al eliminar el archivo QR:', err);
+        console.log("Se quito el archivo")
+      });
       return res.status(200).json({ message: 'Paciente registrado con éxito y correo enviado' });
+      
     } catch (error) {
       console.error('Error al enviar el correo:', mailError);
       return res.status(500).json({ message: 'Paciente registrado, pero ocurrió un error al enviar el correo' });
     }
+
+    
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ message: 'Error al registrar paciente o al enviar el correo' });

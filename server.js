@@ -77,11 +77,10 @@ app.post('/register-patient', async (req, res) => {
     connection = await connectDB(); // Conecta a la base de datos
     await connection.query(sql, [Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita, Sintomas]);
 
-    const qrData = `Nombre: ${Nombre_1} ${Apellido_1} \n DPI: ${DPI}\n Fecha: ${Fecha_Cita}\n Hora: ${Hora_Cita}`; // Asegúrate de definir qrData aquí
+    const qrData = `Nombre: ${Nombre_1} ${Apellido_1} \n DPI: ${DPI}\n Fecha: ${Fecha_Cita}\n Hora: ${Hora_Cita}`; 
     const qrCodeFilePath = path.join(__dirname, 'public/utils/qrCodes', `qr.png`);
-    await QRCode.toFile(qrCodeFilePath, qrData); // Guarda el QR como un archivo PNG
+    await QRCode.toFile(qrCodeFilePath, qrData); 
 
-    // Envía el correo después de insertar en la base de datos
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: EmailFK,
@@ -130,7 +129,7 @@ app.post('/register-patient', async (req, res) => {
                     <p style="font-size: 14px; margin-top: 15px; color: #ffffff;">© 2024 MedicLive. Todos los derechos reservados.</p>
                   </div>
                 </div>
-              </div>`, 
+              </div>`, // Aquí va el HTML que ya tienes
       attachments: [
         {
           filename: 'logomed.png',
@@ -145,25 +144,34 @@ app.post('/register-patient', async (req, res) => {
       ]
     };
 
-
     try {
       await transporter.sendMail(mailOptions);
       console.log('Correo enviado');
       fs.unlink(qrCodeFilePath, (err) => {
         if (err) console.error('Error al eliminar el archivo QR:', err);
-        console.log("Se quito el archivo")
+        console.log("Se eliminó el archivo");
       });
-      return res.status(200).json({ message: 'Paciente registrado con éxito y correo enviado' });
+
+      // Responder al cliente con un mensaje claro
+      return res.status(201).json({ 
+        success: true, 
+        message: 'Paciente registrado con éxito y correo enviado a ' + EmailFK 
+      });
       
     } catch (error) {
-      console.error('Error al enviar el correo:', mailError);
-      return res.status(500).json({ message: 'Paciente registrado, pero ocurrió un error al enviar el correo' });
+      console.error('Error al enviar el correo:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Paciente registrado, pero ocurrió un error al enviar el correo' 
+      });
     }
-
     
   } catch (error) {
     console.error('Error:', error);
-    return res.status(500).json({ message: 'Error al registrar paciente o al enviar el correo' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error al registrar paciente o al enviar el correo' 
+    });
   } finally {
     if (connection) {
       await connection.end(); // Cierra la conexión

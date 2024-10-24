@@ -72,7 +72,7 @@ function SymptomConsultation() {
           required
         />
         <button type="submit" className="btn-send">
-          <FaPaperPlane size={20} /> {/* Ícono de envío */}
+          <FaPaperPlane size={20} />
         </button>
       </form>
     </div>

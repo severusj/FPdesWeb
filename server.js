@@ -9,8 +9,6 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -35,6 +33,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+//API ChatGPT
 app.post('/chatgpt', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -137,8 +136,6 @@ app.post('/register-patient', async (req, res) => {
     try {
       await transporter.sendMail(mailOptions);
       console.log('Correo enviado');
-
-      // Responder al cliente con un mensaje claro
       return res.status(201).json({ 
         success: true, 
         message: 'Paciente registrado con éxito.\n Se ha enviado un correo a: ' + EmailFK 
@@ -160,12 +157,12 @@ app.post('/register-patient', async (req, res) => {
     });
   } finally {
     if (connection) {
-      await connection.end(); // Cierra la conexión
+      await connection.end();
     }
   }
 });
 
-
+//Obtener pacientes
 app.get('/get-patient', async (req, res) => { 
   const sql = 'SELECT * FROM Paciente';
   
@@ -185,14 +182,28 @@ app.get('/get-patient', async (req, res) => {
   }
 });
 
+//Obtener pacientes por DPI
+app.get('/get-patient-by-dpi/:DPI', async (req, res) => {
+  const DPI = req.params.DPI
+  let connection;
+  try {
+    connection = await connectDB();
+    const [results] = await connection.query('SELECT * FROM Paciente WHERE DPI = ?', [DPI]);
+    res.json(results);
+  } catch (error) {
+    console.error('Error al obtener pacientes:', error);
+    return res.status(500).json({ message: 'Error al obtener pacientes' });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+});
 
-
-// Tu ruta de actualización
-// Actualizar el endpoint existente de actualización para incluir el status
+// Actualizar cita
 app.put('/update-appointment', async (req, res) => {
   const { ID_Paciente, Fecha_Cita, Hora_Cita, Status_Cita } = req.body;
 
-  // Verifica si se proporcionan los parámetros necesarios
   if (!ID_Paciente || !Fecha_Cita || !Hora_Cita) {
     return res.status(400).json({ 
       message: 'Se requieren ID_Paciente, Fecha_Cita y Hora_Cita' 
@@ -306,7 +317,7 @@ app.put('/update-appointment', async (req, res) => {
   }
 });
 
-
+//Actualizar estatus de la cita
 app.put('/update-appointment-status', async (req, res) => {
   const { ID_Paciente, Status_Cita } = req.body;
   
@@ -352,10 +363,10 @@ app.put('/update-appointment-status', async (req, res) => {
   }
 });
 
+//Insertar diagnóstico del paciente
 app.put('/update-diagnosis', async (req, res) => {
   const { ID_Paciente, Diagnostico } = req.body;
 
-  // Verifica si se proporcionan los parámetros necesarios
   if (!ID_Paciente || !Diagnostico) {
     return res.status(400).json({ 
       message: 'Se requieren ID_Paciente y Diagnostico' 
@@ -392,8 +403,6 @@ app.put('/update-diagnosis', async (req, res) => {
     }
   }
 });
-
-
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;

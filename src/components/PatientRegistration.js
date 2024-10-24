@@ -61,6 +61,7 @@ function PatientRegistration() {
       return;
     }
 
+    //Llamar a API de POST
     try {
       const response = await axios.post('http://localhost:5000/register-patient', {
         Nombre_1: patient.Nombre_1,
@@ -81,7 +82,7 @@ function PatientRegistration() {
         text: response.data.message,
       });
 
-      // Reiniciar el formulario
+      // Reiniciar el formulario con campos vacíos
       setPatient({
         Nombre_1: '',
         Nombre_2: '',

@@ -22,6 +22,8 @@ function AppointmentsCalendar() {
 
   const fetchPatients = async () => {
     try {
+
+      //Obtener pacientes en GET
       const response = await axios.get('http://localhost:5000/get-patient');
       const patients = response.data;
       const appointments = patients.map((patient) => {
@@ -47,6 +49,7 @@ function AppointmentsCalendar() {
     const newStatus = eventData.patient.Status_Cita === 'activa' ? 'completado' : 'activa';
   
     try {
+      //Llamar a API de actualizar estado
       const response = await axios.put('http://localhost:5000/update-appointment-status', {
         ID_Paciente: eventData.patient.ID_Paciente,
         Status_Cita: newStatus
@@ -88,9 +91,10 @@ function AppointmentsCalendar() {
   
   const saveDiagnosis = async (ID_Paciente, diagnostic) => {
     try {
+      //Insertar el diagnóstico en BD
       const response = await axios.put('http://localhost:5000/update-diagnosis', {
-        ID_Paciente,       // ID del paciente
-        Diagnostico: diagnostic // El diagnóstico ingresado
+        ID_Paciente,
+        Diagnostico: diagnostic
       });
   
       if (response.data.message) {
@@ -158,7 +162,7 @@ function AppointmentsCalendar() {
       ID_Paciente: eventData.patient.ID_Paciente,
       Fecha_Cita: editFormData.fecha,
       Hora_Cita: editFormData.hora + ':00',
-      Status_Cita: eventData.patient.Status_Cita // Mantener el estado actual
+      Status_Cita: eventData.patient.Status_Cita
     };
   
     try {

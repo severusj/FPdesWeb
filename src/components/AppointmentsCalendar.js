@@ -5,7 +5,6 @@ import axios from 'axios';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './AppointmentsCalendar.css';
 import Swal from 'sweetalert2';
-import { FaCheckCircle, FaClock } from 'react-icons/fa'; // Íconos de estado
 
 const localizer = momentLocalizer(moment);
 
@@ -51,7 +50,7 @@ function AppointmentsCalendar() {
         ID_Paciente: eventData.patient.ID_Paciente,
         Status_Cita: newStatus
       });
-      console.log("response", response)
+        console.log("response", response)
       if (response.data.message) {
         await fetchPatients();
         Swal.fire({
@@ -145,8 +144,7 @@ function AppointmentsCalendar() {
 
   const AgendaEvent = ({ event }) => {
     const isEventBeingEdited = editingEventId === event.id;
-    const statusColor = event.patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800';
-
+ 
     const handleEditClick = (e) => {
       e.stopPropagation();
       setEditingEventId(event.id);
@@ -155,172 +153,102 @@ function AppointmentsCalendar() {
         hora: moment(event.start).format('HH:mm'),
       });
     };
-
+  
     const handleNameClick = (e) => {
       e.stopPropagation();
       showPatientInfo(event.patient);
     };
-
+  
     const handleCancelEdit = (e) => {
       e.stopPropagation();
       setEditingEventId(null);
     };
-
-    if (isEventBeingEdited) {
-      return (
-        <div 
-          className="agenda-event-edit"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '8px',
-            backgroundColor: '#f5f5f5',
-            borderRadius: '4px'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <form 
-            onSubmit={(e) => handleEditSubmit(e, event)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}
-          >
-            <input
-              type="date"
-              value={editFormData.fecha}
-              onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
-              required
-              style={{
-                padding: '4px',
-                borderRadius: '4px',
-                border: '1px solid #ddd'
-              }}
-            />
-            <input
-              type="time"
-              value={editFormData.hora}
-              onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
-              required
-              style={{
-                padding: '4px',
-                borderRadius: '4px',
-                border: '1px solid #ddd'
-              }}
-            />
-            <button 
-              type="submit"
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Guardar
-            </button>
-            <button 
-              type="button"
-              onClick={handleCancelEdit}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#f44336',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Cancelar
-            </button>
-          </form>
-        </div>
-      );
-    }
-
+  
+    const statusIcon = event.patient.Status_Cita === 'completado' 
+      ? <i className="fas fa-check-circle" style={{ color: 'grey' }}></i>
+      : <i className="fas fa-check-circle" style={{ color: 'green' }}></i>;
+  
+      if (isEventBeingEdited) {
+        return (
+          <div className="agenda-event-edit" onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={(e) => handleEditSubmit(e, event)}>
+              <input
+                type="date"
+                value={editFormData.fecha}
+                onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
+                required
+              />
+              <input
+                type="time"
+                value={editFormData.hora}
+                onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
+                required
+              />
+              <button type="submit" className="button button-save">Guardar</button>
+              <button type="button" onClick={handleCancelEdit} className="button button-cancel">Cancelar</button>
+            </form>
+          </div>
+        );
+      }
+  
     return (
-      <div 
-        className="agenda-event"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '8px',
-          backgroundColor: '#fff',
-          borderRadius: '4px',
-        }}
-      >
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            cursor: 'pointer'
-          }}
-          onClick={handleNameClick}
-        >
-          {event.patient.Status_Cita === 'completado' ? (
-            <FaCheckCircle style={{ color: statusColor }} />
-          ) : (
-            <FaClock style={{ color: statusColor }} />
-          )}
-          <strong>{`${event.title} - ${moment(event.start).format('DD/MM/YYYY')} ${moment(event.start).format('HH:mm')} - ${event.patient.Status_Cita || 'activa'}`}</strong>
-        </div>
+      <div className="agenda-event" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px', gap: '15px' }}>
         <div>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusChange(event);
-            }}
-            style={{
-              padding: '4px 8px',
-              backgroundColor: event.patient.Status_Cita === 'completado' ? '#FF9800' : '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginLeft: '10px'
-            }}
-          >
-            {event.patient.Status_Cita === 'completado' ? 'Reabrir' : 'Completar'}
+          <span onClick={handleNameClick} style={{ cursor: 'pointer', color: '#2196F3', textDecoration: 'underline' }}>
+            {event.title}
+          </span>
+          <span style={{ marginLeft: '10px', color: '#666' }}>
+            {moment(event.start).format('DD/MM/YYYY HH:mm')}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div>
+            {statusIcon}
+            <span style={{ marginLeft: '5px' }}>
+              {event.patient.Status_Cita === 'completado' ? 'Completado' : 'Activa'}
+            </span>
+          </div>
+          <div>
+          <button onClick={(e) => handleStatusChange(event)} className="button button-event">
+            {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
           </button>
-          <button 
-            onClick={handleEditClick}
-            style={{
-              padding: '4px 8px',
-              backgroundColor: '#2196F3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginLeft: '10px'
-            }}
-          >
+          <button onClick={handleEditClick} className="button button-event">
             Editar
           </button>
+          </div>
         </div>
-      </div>
+    </div>
     );
-  };
+  };  
 
   return (
-    <div style={{ height: '100vh', padding: '20px' }}>
+    <div className="module-container">
       <Calendar
         localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: '80vh' }}
+        style={{ height: 500, margin: '50px' }}
+        views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+        messages={{
+          next: "Siguiente",
+          previous: "Anterior",
+          today: "Hoy",
+          month: "Mes",
+          week: "Semana",
+          day: "Día",
+          agenda: "Agenda",
+        }}
         onSelectEvent={handleSelectEvent}
         components={{
-          event: AgendaEvent
+          agenda: {
+            event: AgendaEvent
+          }
         }}
-        views={{ month: true, week: true, day: true, agenda: true }}
-        defaultView={Views.AGENDA}
+        eventPropGetter={(event) => ({
+          style: {
+          }
+        })}        
       />
     </div>
   );

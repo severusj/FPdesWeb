@@ -352,6 +352,48 @@ app.put('/update-appointment-status', async (req, res) => {
   }
 });
 
+app.put('/update-diagnosis', async (req, res) => {
+  const { ID_Paciente, Diagnostico } = req.body;
+
+  // Verifica si se proporcionan los parámetros necesarios
+  if (!ID_Paciente || !Diagnostico) {
+    return res.status(400).json({ 
+      message: 'Se requieren ID_Paciente y Diagnostico' 
+    });
+  }
+
+  let connection;
+  try {
+    connection = await connectDB();
+
+    // Actualiza el diagnóstico
+    const sql = 'UPDATE paciente SET Diagnostico = ? WHERE ID_Paciente = ?';
+    const params = [Diagnostico, ID_Paciente];
+
+    const [results] = await connection.query(sql, params);
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ 
+        message: 'Paciente no encontrado' 
+      });
+    }
+
+    res.status(200).json({ 
+      message: 'Diagnóstico actualizado con éxito' 
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar diagnóstico:', error);
+    return res.status(500).json({ 
+      message: 'Error al actualizar diagnóstico' 
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+});
+
+
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;

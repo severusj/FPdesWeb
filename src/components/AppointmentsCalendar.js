@@ -42,29 +42,67 @@ function AppointmentsCalendar() {
     }
   };
 
-  const handleStatusChange = async (eventData) => {
+  const handleStatusChange = async (eventData, e) => {
+    e.stopPropagation(); // Detener la propagación del evento
     const newStatus = eventData.patient.Status_Cita === 'activa' ? 'completado' : 'activa';
-    
+  
     try {
       const response = await axios.put('http://localhost:5000/update-appointment-status', {
         ID_Paciente: eventData.patient.ID_Paciente,
         Status_Cita: newStatus
       });
-        console.log("response", response)
+  
+      console.log("response", response);
+      
       if (response.data.message) {
-        await fetchPatients();
-        Swal.fire({
-          title: '¡Estado actualizado!',
-          text: `La cita ha sido marcada como ${newStatus}`,
-          icon: 'success',
-          confirmButtonColor: '#2196F3'
-        });
+        await fetchPatients(); // Actualiza los pacientes después de cambiar el estado
+  
+        if (newStatus === 'completado') {
+          const { value: diagnostic } = await Swal.fire({
+            title: '¡Estado actualizado!',
+            text: `La cita ha sido marcada como ${newStatus}. Ingrese el diagnóstico:`,
+            icon: 'success',
+            input: 'textarea',
+            inputPlaceholder: 'Ingrese el diagnóstico aquí...',
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            confirmButtonColor: '#2196F3',
+            cancelButtonText: 'Cancelar'
+          });
+  
+          // Verifica si se ingresó un diagnóstico
+          if (diagnostic) {
+            await saveDiagnosis(eventData.patient.ID_Paciente, diagnostic);
+          }
+        } else {
+          // Si el nuevo estado es 'activa', simplemente muestra una alerta
+          Swal.fire('¡Éxito!', 'La cita ha sido reactivada correctamente.', 'success');
+        }
       }
     } catch (error) {
       console.error('Error al actualizar el estado:', error);
       Swal.fire('Error', 'No se pudo actualizar el estado de la cita', 'error');
     }
   };
+ 
+  
+  const saveDiagnosis = async (ID_Paciente, diagnostic) => {
+    try {
+      const response = await axios.put('http://localhost:5000/update-diagnosis', {
+        ID_Paciente,       // ID del paciente
+        Diagnostico: diagnostic // El diagnóstico ingresado
+      });
+  
+      if (response.data.message) {
+        Swal.fire('¡Éxito!', 'Diagnóstico guardado correctamente', 'success');
+      }
+    } catch (error) {
+      console.error('Error al guardar el diagnóstico:', error);
+      Swal.fire('Error', 'No se pudo guardar el diagnóstico', 'error');
+    }
+  };
+  
+   
 
   const showPatientInfo = (patient) => {
     Swal.fire({
@@ -168,36 +206,36 @@ function AppointmentsCalendar() {
       ? <i className="fas fa-check-circle" style={{ color: 'grey' }}></i>
       : <i className="fas fa-check-circle" style={{ color: 'green' }}></i>;
   
-      if (isEventBeingEdited) {
-        return (
-          <div className="agenda-event-edit" onClick={(e) => e.stopPropagation()}>
-            <form onSubmit={(e) => handleEditSubmit(e, event)}>
-              <p><strong>Ingresa la nueva fecha:</strong></p>
-              <input
-                type="date"
-                value={editFormData.fecha}
-                onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
-                required
-                className="input-field"
-              />
-              <br></br>
-              <br></br>
-              <p><strong>Ingresa la nueva hora:</strong></p>
-              <input
-                type="time"
-                value={editFormData.hora}
-                onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
-                required
-                className="input-field"
-              />
-              <br></br>
-              <br></br>
-              <button type="submit" className="button button-save">Guardar</button>
-              <button type="button" onClick={handleCancelEdit} className="button button-cancel">Cancelar</button>
-            </form>
-          </div>
-        );
-      }
+    if (isEventBeingEdited) {
+      return (
+        <div className="agenda-event-edit" onClick={(e) => e.stopPropagation()}>
+          <form onSubmit={(e) => handleEditSubmit(e, event)}>
+            <p><strong>Ingresa la nueva fecha:</strong></p>
+            <input
+              type="date"
+              value={editFormData.fecha}
+              onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
+              required
+              className="input-field"
+            />
+            <br></br>
+            <br></br>
+            <p><strong>Ingresa la nueva hora:</strong></p>
+            <input
+              type="time"
+              value={editFormData.hora}
+              onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
+              required
+              className="input-field"
+            />
+            <br></br>
+            <br></br>
+            <button type="submit" className="button button-save">Guardar</button>
+            <button type="button" onClick={handleCancelEdit} className="button button-cancel">Cancelar</button>
+          </form>
+        </div>
+      );
+    }
   
     return (
       <div className="agenda-event" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px', gap: '15px' }}>
@@ -217,15 +255,15 @@ function AppointmentsCalendar() {
             </span>
           </div>
           <div>
-          <button onClick={(e) => handleStatusChange(event)} className="button button-event">
-            {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
-          </button>
-          <button onClick={handleEditClick} className="button button-event">
-            Reprogramar
-          </button>
+            <button onClick={(e) => handleStatusChange(event, e)} className="button button-event">
+              {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
+            </button>
+            <button onClick={handleEditClick} className="button button-event">
+              Reprogramar
+            </button>
           </div>
         </div>
-    </div>
+      </div>
     );
   };  
 

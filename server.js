@@ -40,7 +40,7 @@ app.post('/chatgpt', async (req, res) => {
     const { prompt } = req.body;
     const systemMessage = {
       role: 'system',
-      content: 'Eres un médico experto. Habla con términos técnicos y proporciona explicaciones detalladas sobre diagnósticos médicos, planes de acción y procesos clínicos.'
+      content: 'Eres un médico experto. Habla con términos técnicos y proporciona explicaciones detalladas sobre diagnósticos médicos, formas de actuar, planes de acción y procesos clínicos. Hablarás únicamente con términos médicos.'
     };
 
     const userMessage = {

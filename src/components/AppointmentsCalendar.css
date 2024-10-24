@@ -145,3 +145,39 @@
 .swal2-html-container {
   margin: 1em 1.6em 0.3em !important;
 }
+.agenda-event {
+  background-color: #fff;
+  border-left: 4px solid #FF9800;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.agenda-event:hover {
+  background-color: #f1f1f1;
+}
+
+.agenda-event-edit {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-left: 4px solid #4CAF50;
+}
+
+button {
+  background-color: #2196F3;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0d6efd;
+}
+
+.agenda-event .fas {
+  font-size: 1.2em;
+}

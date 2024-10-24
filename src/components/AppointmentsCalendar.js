@@ -5,6 +5,7 @@ import axios from 'axios';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './AppointmentsCalendar.css';
 import Swal from 'sweetalert2';
+import { FaCheckCircle, FaClock } from 'react-icons/fa'; // Íconos de estado
 
 const localizer = momentLocalizer(moment);
 
@@ -50,7 +51,7 @@ function AppointmentsCalendar() {
         ID_Paciente: eventData.patient.ID_Paciente,
         Status_Cita: newStatus
       });
-        console.log("response", response)
+      console.log("response", response)
       if (response.data.message) {
         await fetchPatients();
         Swal.fire({
@@ -249,37 +250,27 @@ function AppointmentsCalendar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '8px',
-          backgroundColor: event.patient.Status_Cita === 'completado' ? '#E8F5E9' : '#FFF3E0',
-          borderLeft: `4px solid ${statusColor}`,
-          borderRadius: '4px'
+          backgroundColor: '#fff',
+          borderRadius: '4px',
         }}
       >
-        <div>
-          <span 
-            onClick={handleNameClick}
-            style={{ 
-              cursor: 'pointer', 
-              color: '#2196F3',
-              textDecoration: 'underline'
-            }}
-          >
-            {event.title}
-          </span>
-          <span style={{ marginLeft: '10px', color: '#666' }}>
-            {moment(event.start).format('DD/MM/YYYY HH:mm')}
-          </span>
-          <span 
-            style={{ 
-              marginLeft: '10px', 
-              color: statusColor,
-              fontWeight: 'bold',
-              fontSize: '0.9em'
-            }}
-          >
-            {event.patient.Status_Cita || 'activa'}
-          </span>
+        <div 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            cursor: 'pointer'
+          }}
+          onClick={handleNameClick}
+        >
+          {event.patient.Status_Cita === 'completado' ? (
+            <FaCheckCircle style={{ color: statusColor }} />
+          ) : (
+            <FaClock style={{ color: statusColor }} />
+          )}
+          <strong>{`${event.title} - ${moment(event.start).format('DD/MM/YYYY')} ${moment(event.start).format('HH:mm')} - ${event.patient.Status_Cita || 'activa'}`}</strong>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div>
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -287,14 +278,15 @@ function AppointmentsCalendar() {
             }}
             style={{
               padding: '4px 8px',
-              backgroundColor: statusColor,
+              backgroundColor: event.patient.Status_Cita === 'completado' ? '#FF9800' : '#4CAF50',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              marginLeft: '10px'
             }}
           >
-            {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
+            {event.patient.Status_Cita === 'completado' ? 'Reabrir' : 'Completar'}
           </button>
           <button 
             onClick={handleEditClick}
@@ -304,7 +296,8 @@ function AppointmentsCalendar() {
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              marginLeft: '10px'
             }}
           >
             Editar
@@ -315,35 +308,19 @@ function AppointmentsCalendar() {
   };
 
   return (
-    <div className="module-container">
+    <div style={{ height: '100vh', padding: '20px' }}>
       <Calendar
         localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 500, margin: '50px' }}
-        views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-        messages={{
-          next: "Siguiente",
-          previous: "Anterior",
-          today: "Hoy",
-          month: "Mes",
-          week: "Semana",
-          day: "Día",
-          agenda: "Agenda",
-        }}
+        style={{ height: '80vh' }}
         onSelectEvent={handleSelectEvent}
         components={{
-          agenda: {
-            event: AgendaEvent
-          }
+          event: AgendaEvent
         }}
-        eventPropGetter={(event) => ({
-          style: {
-            backgroundColor: event.patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800',
-            borderColor: event.patient.Status_Cita === 'completado' ? '#2E7D32' : '#F57C00'
-          }
-        })}
+        views={{ month: true, week: true, day: true, agenda: true }}
+        defaultView={Views.AGENDA}
       />
     </div>
   );

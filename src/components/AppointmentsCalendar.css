@@ -215,6 +215,21 @@
 }
 
 .button-event:active {
-  transform: translateY(0); /* Regresar a la posición original al hacer clic */
+  transform: translateY(0);
 }
 
+.input-field {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.input-field:focus {
+  border-color: #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+  outline: none;
+}

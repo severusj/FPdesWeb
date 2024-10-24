@@ -172,18 +172,26 @@ function AppointmentsCalendar() {
         return (
           <div className="agenda-event-edit" onClick={(e) => e.stopPropagation()}>
             <form onSubmit={(e) => handleEditSubmit(e, event)}>
+              <p><strong>Ingresa la nueva fecha:</strong></p>
               <input
                 type="date"
                 value={editFormData.fecha}
                 onChange={(e) => setEditFormData({ ...editFormData, fecha: e.target.value })}
                 required
+                className="input-field"
               />
+              <br></br>
+              <br></br>
+              <p><strong>Ingresa la nueva hora:</strong></p>
               <input
                 type="time"
                 value={editFormData.hora}
                 onChange={(e) => setEditFormData({ ...editFormData, hora: e.target.value })}
                 required
+                className="input-field"
               />
+              <br></br>
+              <br></br>
               <button type="submit" className="button button-save">Guardar</button>
               <button type="button" onClick={handleCancelEdit} className="button button-cancel">Cancelar</button>
             </form>
@@ -213,7 +221,7 @@ function AppointmentsCalendar() {
             {event.patient.Status_Cita === 'completado' ? 'Reactivar' : 'Completar'}
           </button>
           <button onClick={handleEditClick} className="button button-event">
-            Editar
+            Reprogramar
           </button>
           </div>
         </div>

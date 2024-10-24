@@ -3,6 +3,9 @@ const axios = require('axios');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
 const nodemailer = require('nodemailer');
+const QRCode = require('qrcode'); 
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -63,17 +66,20 @@ app.post('/chatgpt', async (req, res) => {
   }
 });
 
-// Endpoint para la API de ChatGPT
 app.post('/register-patient', async (req, res) => {
   const { Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita, Sintomas } = req.body;
 
   const sql = 'INSERT INTO Paciente (Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita, Sintomas) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
+  
   let connection;
 
   try {
     connection = await connectDB(); // Conecta a la base de datos
     await connection.query(sql, [Nombre_1, Nombre_2, Apellido_1, Apellido_2, EmailFK, NumeroFK, DPI, Fecha_Cita, Hora_Cita, Sintomas]);
+
+    const qrData = `Nombre: ${Nombre_1}\n DPI: ${DPI}\n Fecha: ${Fecha_Cita}\n Hora: ${Hora_Cita}`; // Asegúrate de definir qrData aquí
+    const qrCodeFilePath = path.join(__dirname, 'public/utils/qrCodes', `${DPI}.png`);
+    await QRCode.toFile(qrCodeFilePath, qrData); // Guarda el QR como un archivo PNG
 
     // Envía el correo después de insertar en la base de datos
     const mailOptions = {
@@ -81,49 +87,60 @@ app.post('/register-patient', async (req, res) => {
       to: EmailFK,
       subject: 'Confirmación de Registro de Paciente',
       html: `<div style="font-family: 'Arial', sans-serif; color: #333; background-color: #f9f9f9; padding: 0; margin: 0; width: 100%; height: 100%;">
-          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
-             
-            <!-- Header -->
-            <div style="background-image: url('https://www.example.com/banner-image.jpg'); background-size: cover; background-position: center; padding: 20px 0; text-align: center; color: white;">
-              <h1 style="font-size: 28px; margin: 0;">¡Tu cita está confirmada!</h1>
-            </div>
- 
-            <!-- Main Content -->
-            <div style="padding: 20px 30px; background-color: #ffffff;">
-              <h2 style="color: #4CAF50; font-size: 24px;">Confirmación de Registro de Paciente</h2>
-              <p style="font-size: 16px;">Hola <strong style="color: #4CAF50;">${Nombre_1}</strong>,</p>
-              <p style="font-size: 16px;">Gracias por registrarte en <strong>MedicLive</strong>. Hemos confirmado tu cita con un médico.</p>
-               
-              <!-- Appointment Details with Icons -->
-              <div style="background-color: #f4f4f4; border-radius: 8px; padding: 15px; margin-top: 15px;">
-                <p style="font-size: 16px; margin: 0;">
-                  <img src="https://forum.nourity.org/uploads/default/original/1X/38b6658eda257c2a5348fe1e037975b53c9e3187.png" alt="Calendario" style="width: 20px; vertical-align: middle; margin-right: 8px;">
-                  <strong>Fecha de Cita:</strong> <span style="color: #4CAF50;">${Fecha_Cita}</span>
-                </p>
-                <p style="font-size: 16px; margin: 10px 0 0 0;">
-                  <img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" alt="Reloj" style="width: 20px; vertical-align: middle; margin-right: 8px;">
-                  <strong>Hora de Cita:</strong> <span style="color: #4CAF50;">${Hora_Cita} hrs</span>
-                </p>
-              </div>
- 
-              <!-- Instructions -->
-              <p style="font-size: 16px; margin-top: 20px; line-height: 1.6;">Por favor, llega al consultorio 10 minutos antes de tu cita para facilitar el proceso de registro.</p>
-            </div>
- 
-            <!-- Footer -->
-            <div style="padding: 20px; background-color: #4CAF50; color: white; text-align: center;">
-              <p style="font-size: 16px; margin: 0;">Atentamente,</p>
-              <p style="font-size: 16px; margin: 5px 0 20px 0; font-weight: bold;">MedicLive</p>
-              <img src="cid:logoMedicLive" alt="MedicLive" style="width: 100px; height: 100px; margin-top: 10px;"/>
-              <p style="font-size: 14px; margin-top: 15px; color: #ffffff;">© 2024 MedicLive. Todos los derechos reservados.</p>
-            </div>
-          </div>
-        </div>`, // El contenido del correo que ya tienes
+                <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                  <!-- Header -->
+                  <div style="background-image: url('https://www.example.com/banner-image.jpg'); background-size: cover; background-position: center; padding: 20px 0; text-align: center; color: white;">
+                    <h1 style="font-size: 28px; margin: 0;">¡Tu cita está confirmada!</h1>
+                  </div>
+     
+                  <!-- Main Content -->
+                  <div style="padding: 20px 30px; background-color: #ffffff;">
+                    <h2 style="color: #4CAF50; font-size: 24px;">Confirmación de Registro de Paciente</h2>
+                    <p style="font-size: 16px;">Hola <strong style="color: #4CAF50;">${Nombre_1}</strong>,</p>
+                    <p style="font-size: 16px;">Gracias por registrarte en <strong>MedicLive</strong>. Hemos confirmado tu cita con un médico.</p>
+                     
+                    <!-- Appointment Details with Icons -->
+                    <div style="background-color: #f4f4f4; border-radius: 8px; padding: 15px; margin-top: 15px;">
+                      <p style="font-size: 16px; margin: 0;">
+                        <img src="https://forum.nourity.org/uploads/default/original/1X/38b6658eda257c2a5348fe1e037975b53c9e3187.png" alt="Calendario" style="width: 20px; vertical-align: middle; margin-right: 8px;">
+                        <strong>Fecha de Cita:</strong> <span style="color: #4CAF50;">${Fecha_Cita}</span>
+                      </p>
+                      <p style="font-size: 16px; margin: 10px 0 0 0;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2784/2784459.png" alt="Reloj" style="width: 20px; vertical-align: middle; margin-right: 8px;">
+                        <strong>Hora de Cita:</strong> <span style="color: #4CAF50;">${Hora_Cita} hrs</span>
+                      </p>
+                      <p style="font-size: 16px; margin: 10px 0 0 0;">
+                        Muestra el siguiente QR cuando te presentes a tu cita:
+                      </p>
+                    </div>
+                    <!-- Incluye la imagen QR -->
+                    <p style="font-size: 16px; margin: 10px 0 0 0; text-align:center">
+                      <img src="cid:qrCode" alt="QR Code" style="width: 200px; height: 200px; margin: 10px auto;">
+                    </p>
+     
+                    <!-- Instructions -->
+                    <p style="font-size: 16px; margin-top: 20px; line-height: 1.6;">Por favor, llega al consultorio 10 minutos antes de tu cita para facilitar el proceso de registro.</p>
+                  </div>
+     
+                  <!-- Footer -->
+                  <div style="padding: 20px; background-color: #4CAF50; color: white; text-align: center;">
+                    <p style="font-size: 16px; margin: 0;">Atentamente,</p>
+                    <p style="font-size: 16px; margin: 5px 0 20px 0; font-weight: bold;">MedicLive</p>
+                    <img src="cid:logoMedicLive" alt="MedicLive" style="width: 100px; height: 100px; margin-top: 10px;"/>
+                    <p style="font-size: 14px; margin-top: 15px; color: #ffffff;">© 2024 MedicLive. Todos los derechos reservados.</p>
+                  </div>
+                </div>
+              </div>`, 
       attachments: [
         {
           filename: 'logomed.png',
           path: './public/utils/logomed.png',
           cid: 'logoMedicLive'
+        },
+        {
+          filename: `${DPI}.png`,
+          path: qrCodeFilePath,
+          cid: 'qrCode'
         }
       ]
     };

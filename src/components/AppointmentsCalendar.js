@@ -135,9 +135,13 @@ function AppointmentsCalendar() {
           </p>
           <p style="margin: 10px 0;">
             <strong style="color: #2196F3;">Estado:</strong> 
-            <span style="margin-left: 8px; color: ${patient.Status_Cita === 'completado' ? '#4CAF50' : '#FF9800'}">
+            <span style="margin-left: 8px; color: ${patient.Status_Cita === 'Completado' ? '#4CAF50' : '#FF9800'}">
               ${patient.Status_Cita || 'activa'}
             </span>
+          </p>
+          <p style="margin: 10px 0;">
+            <strong style="color: #2196F3;">Síntomas:</strong> 
+            <span style="margin-left: 8px;">${patient.Sintomas}</span>
           </p>
         </div>
       `,

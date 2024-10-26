@@ -15,12 +15,13 @@ app.use(express.json());
 // Configurar la conexión con la base de datos MySQL
 async function connectDB(){
   const connection = await mysql.createConnection({
-    host: 'localhost',
+    host: 'dbpdw.cvqmgu2omprt.us-east-2.rds.amazonaws.com',
     user: 'root', 
-    password: 'Test12345.',
+    password: 'Grupo5DW2024.',
+    // Grupo5DW2024.
     database: 'medic_live'
   });
-
+ 
   return connection
 }
 
